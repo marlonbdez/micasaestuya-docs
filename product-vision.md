@@ -70,8 +70,14 @@ Lanzamiento: Cuba y República Dominicana (ya existe árbol de regiones para amb
 - Reseñas y reputación acumulada.
 - Cualquier tipo de pago, suscripción o cuota.
 
+## Prototipo
+
+Prototipo navegable de las pantallas del MVP (explorar alojamientos, ver el detalle, contactar por WhatsApp, publicar un alojamiento), construido sobre el sistema de diseño ya existente (`micasaestuya-web/docs/design-system.md`): https://claude.ai/artifact/3WfsYw8MexiYGwnK95eF17
+
+Sirve para validar el flujo y el diseño visual antes de escribir código. Se revisa y se actualiza ahí mismo — este enlace es la referencia, no una copia.
+
 ## Próximos pasos
 
 1. Actualizar la documentación técnica existente (wiki y `CLAUDE.md` de cada repo) para que deje de describir un portal inmobiliario.
-2. Prototipo navegable de la interfaz antes de escribir código, para validar diseño visual y de flujo.
+2. ~~Prototipo navegable de la interfaz antes de escribir código, para validar diseño visual y de flujo.~~ Hecho — ver [Prototipo](#prototipo).
 3. Implementación del MVP.
