@@ -49,11 +49,15 @@ Los tres workflows disparan también en push/PR a `develop`, pero esa rama no ex
 
 Ver también: [Infraestructura y despliegue](Infrastructure-and-Deployment.md)
 
-## Por qué el lint genera su propio informe de calidad, y no Code Climate
+## Por qué no hay Code Climate: la complejidad la mide ESLint
 
-GitLab deprecó el escaneo basado en Code Climate en la 17.3 y lo elimina en la
-19.0. En vez de afinar una herramienta con fecha de caducidad, el informe de
-calidad lo genera ahora el propio ESLint (`npm run lint:js -- --format
-gitlab`), con la métrica de complejidad recuperada vía la regla `complexity`
-de ESLint. Antes había dos herramientas opinando con criterios distintos sobre
-el mismo código; ahora hay una sola fuente de verdad.
+Cuando la CI vivía en GitLab, el informe de Code Quality lo generaba Code
+Climate. GitLab lo deprecó en la 17.3 (y lo elimina en la 19.0), así que en vez
+de afinar una herramienta con fecha de caducidad se pasó la métrica de
+complejidad al propio ESLint, con la regla `complexity` (`['error', 10]` en el
+`.eslintrc.cjs` de web). Antes había dos herramientas opinando con criterios
+distintos sobre el mismo código; ahora hay una sola.
+
+Con la migración a GitHub Actions desapareció el informe en sí: el job `lint`
+solo ejecuta `npm run lint`, y un exceso de complejidad hace fallar el job en
+vez de aparecer en un informe aparte. El formato `--format gitlab` ya no se usa.

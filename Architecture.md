@@ -19,22 +19,26 @@ title: Architecture
 ```
 web/
   core/
+    httpClient.ts           <- cliente $fetch con la baseURL de la api
     services/repository/
-      fetchFactory.ts      <- clase base HTTP (antes HttpFactory)
+      fetchFactory.ts       <- clase base HTTP (antes HttpFactory)
       modules/
         auth.ts             <- AuthModule
-        region.ts            <- RegionModule
-    types.d.ts
-    httpClient.ts
+        region.ts           <- RegionModule
+    types.ts                <- re-exporta los tipos (nunca .d.ts)
+    types/                  <- interfaces por dominio
   composables/
     useAuthToken.ts         <- wrapper de useCookie() para el JWT
-  stores/
-    auth.ts                 <- Pinia
-    region.ts                <- Pinia
+    useRegionSuggest.ts, useRegionCascade.ts, ...
+  stores/                   <- Pinia: auth, region, global, adFlow
   plugins/
     services.ts             <- provee $services (auth, region)
   sentry.client.config.ts
 ```
+
+Detalle y reglas de estilo: `micasaestuya-web/CLAUDE.md`. Parte de lo que hay en
+`web` (`adFlow`, `core/types/property.ts`, `core/models/Property.ts`) es del
+modelo anterior al pivote; ver [status.md](status.md).
 
 ## api — capas internas
 

@@ -25,12 +25,19 @@ Prohibido:
 
 ```
 core/services/repository/    -> FetchFactory + módulos (AuthModule, RegionModule)
+core/types.ts + core/types/  -> tipos, siempre en .ts (nunca .d.ts)
 composables/useAuthToken.ts  -> wrapper de useCookie() para el JWT
-stores/                       -> Pinia (auth, region)
+stores/                       -> Pinia (auth, region, global, adFlow)
 plugins/services.ts           -> provee $services
 ```
 
+Las reglas completas de estilo de `web` están en `micasaestuya-web/CLAUDE.md` y
+`micasaestuya-web/docs/design-system.md`.
+
 ## Git / CI
 
-- lint-staged en pre-commit hook (reemplaza git add -u).
+- web: hooks de husky. `pre-commit` corre `npm run lint:fix` y los tests
+  unitarios; `pre-push` corre `npm run build`. api no tiene hooks.
+- El lint de web incluye Prettier sobre todo el repo, **también los `.md`**: un
+  `CLAUDE.md` o un doc sin formatear rompe la CI.
 - data-cy como convención de test id en templates (no data-test-id, ya migrado).

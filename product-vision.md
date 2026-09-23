@@ -1,6 +1,6 @@
 # Visión de producto
 
-**Este documento sustituye la idea original de micasaestuya como portal de compraventa/alquiler de inmuebles.** Ver [ADRs](ADRs.md) (ADR 006) para el porqué del cambio. El resto de la documentación técnica (wiki, `CLAUDE.md` de cada repo, `docs/` de este repo) todavía describe en parte el modelo anterior y se está reescribiendo para reflejar esto — si algo contradice a este documento, gana este documento.
+**Este documento sustituye la idea original de micasaestuya como portal de compraventa/alquiler de inmuebles.** Ver [ADRs](ADRs.md) (ADR 006) para el porqué del cambio. El código todavía es en buena parte el del modelo anterior, y algunos documentos de los repos lo describen como referencia técnica (avisándolo, como `micasaestuya-web/docs/post-ad-flow.md`) — si algo contradice a este documento, gana este documento.
 
 ## Qué es
 
@@ -78,6 +78,6 @@ Sirve para validar el flujo y el diseño visual antes de escribir código. Se re
 
 ## Próximos pasos
 
-1. Actualizar la documentación técnica existente (wiki y `CLAUDE.md` de cada repo) para que deje de describir un portal inmobiliario.
+1. ~~Actualizar la documentación técnica existente (este repo, y los `CLAUDE.md`, README y `docs/` de cada repo) para que deje de describir un portal inmobiliario.~~ Hecho (sept 2026). Lo que queda del modelo anterior es código, y se decide al implementar el MVP.
 2. ~~Prototipo navegable de la interfaz antes de escribir código, para validar diseño visual y de flujo.~~ Hecho — ver [Prototipo](#prototipo).
 3. Implementación del MVP.
