@@ -24,7 +24,7 @@ Estos son los únicos endpoints que existen hoy. Los del MVP (publicar un alojam
 
 - JWT en header Authorization: `Bearer <token>`.
 - Token sin expiración todavía (pendiente: expiración + refresh).
-- Roles pendientes: guest | host | admin.
+- Roles: el schema de `User` ya tiene el campo `role` (`guest` | `host` | `admin`, `guest` por defecto), pero nada lo usa todavía. En el producto hay dos papeles, anfitrión y huésped (el viajero), más la moderación; cómo se reflejan en `role` está por decidir, y se decide antes de construir `Listing`.
 - Middleware auth en utils/middleware.js.
 
 ## Manejo de errores
