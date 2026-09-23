@@ -11,7 +11,7 @@ title: Architecture
 ```
 
 - `web`: SSG/Nuxt, se sirve estático desde Netlify (CDN), sin servidor Node corriendo en producción para el frontend.
-- `api`: Express corriendo como Web Service en Render, habla con Mongo Atlas (datos de negocio: usuarios, propiedades) y con Redis/Upstash (caché de localización).
+- `api`: Express corriendo como Web Service en Render, habla con Mongo Atlas (datos de negocio: usuarios, alojamientos, estancias) y con Redis/Upstash (caché de localización).
 - No hay comunicación directa entre `web` y las bases de datos — todo pasa por `api`.
 
 ## web — capas internas
