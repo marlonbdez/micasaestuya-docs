@@ -18,6 +18,8 @@ GET  /api/regions/suggest  -> autocompletado de regiones (Redis)
 GET  /api/regions/children -> hijos de una región (Redis)
 ```
 
+Estos son los únicos endpoints que existen hoy. Los del MVP (publicar un alojamiento, listarlos) todavía no están construidos — ver `product-vision.md` para qué hace falta.
+
 ## Autenticación
 
 - JWT en header Authorization: `Bearer <token>`.
