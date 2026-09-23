@@ -75,9 +75,24 @@ El **paso 4, fotos**. El lint pasa, pero nadie lo ha abierto todavía. Qué mira
 - Que una foto vertical de móvil no salga tumbada: es lo que evita
   `imageOrientation` en `useImageResize.ts`.
 
+El **paso 5, descripción**. Solo el textarea de descripción, obligatorio; no
+lleva "extras" todavía (ver deuda anotada). Qué mirar:
+
+- Que el indicador marque 05/05 y que "Siguiente" (ahora "Publicar") se
+  encienda al escribir algo.
+- Que el mensaje de campo obligatorio aparezca al salir del campo vacío, igual
+  que en la dirección del paso 2.
+- Que el texto sobreviva a recargar la página (se persiste en el borrador de
+  `localStorage`, como el resto de campos de texto).
+
+Nuevo componente base: `BaseTextarea.vue`, calcado de `BaseInput.vue` pero con
+`<textarea>`. No existía ninguno para texto largo.
+
 ### Lo siguiente, por orden
 
-1. **Paso 5, descripción y extras.**
+1. **"Extras" del paso 5.** Queda pendiente de definir: no hay vocabulario de
+   dominio para amenidades/extras. `IProperty.amenities: string[]` no vale de
+   referencia, es residuo del prototipo de IA (`post-ad-flow.md` § 7).
 
 2. **La pantalla de publicar**, con el login embebido y el envío al backend, que
    hoy no existe. Ahí es donde el anuncio pasa a Mongo y donde toca decidir si
