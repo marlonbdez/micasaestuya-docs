@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-_Última revisión: 23-09-2026._
+_Última revisión: 25-09-2026._
 
 ## Antes de nada: este documento no es la fuente de verdad
 
@@ -35,21 +35,31 @@ lista de tareas pendientes.
 ## Dónde estamos
 
 - **Pivote decidido y documentado**: `product-vision.md` y ADR 006. La
-  documentación de los cuatro repos (este, y los `CLAUDE.md`, README,
-  CONTRIBUTING y `docs/` de `web`, `api` e `infra`) se alineó con el pivote en
-  las ramas `docs/align-after-pivot`.
+  documentación de `docs`, `web` y `api` ya está alineada (ramas
+  `docs/align-after-pivot` fusionadas). En `infra`, esa rama figura sin fusionar
+  en la copia local: **hay que confirmarlo en GitHub**.
 - **Prototipo del MVP hecho**, sobre el sistema de diseño real de `web`: Explorar,
   Detalle de alojamiento (con el botón de WhatsApp), Publicar y Confirmación.
-- **El código sigue siendo el del modelo anterior.** No se ha escrito todavía
-  nada del MVP:
-  - `api` solo tiene `User` y `Region`. No existe `Listing`.
-  - `web` tiene el flow de `/post-ad` (5 pasos, pensado para inmuebles). Qué se
-    reaprovecha y qué se reescribe se decide al implementar el MVP;
-    `micasaestuya-web/docs/post-ad-flow.md` ya lo avisa.
-- **Primer paso hacia el prototipo en `web`**: el logo pasa de PNG a wordmark de
-  texto (`feat/logo-text-wordmark`, PR #22). El lint de ese PR no falla por el
-  logo: el `CLAUDE.md` de `main` no pasaba Prettier (se arregla en
-  `docs/align-after-pivot` de `web`).
+- **Primera pantalla del MVP en `web`** (PR #26): Publicar alojamiento
+  (`/publicar-alojamiento`) y Confirmación (`/publicar-alojamiento/publicado`),
+  más el header y el footer rediseñados según el prototipo. Detalle:
+  - Una sola página de formulario: título, región (`RegionCascade`, obligatoria
+    hasta el último nivel), fotos, descripción, tareas de colaboración,
+    capacidad y WhatsApp.
+  - El borrador vive en el store `listingDraft` (`localStorage`) y las fotos en
+    IndexedDB, **solo en el navegador**: todavía no se suben.
+  - Identificarse se pide solo al pulsar Publicar, con el `AuthModal` que ya
+    existía.
+  - **El envío es simulado**: no existe `POST /api/listings`. El único fichero
+    que cambia el día que exista es
+    `micasaestuya-web/core/services/repository/modules/listing.ts`.
+  - `/post-ad` sigue en el código, sin enlazar desde ningún sitio. No se borra:
+    se moverá a una carpeta aparte cuando se decida qué se reaprovecha.
+- **Especificación de `Listing` para `api`**: [Listing.md](Listing.md) (PR #3).
+  Schema, región, fotos reservadas, contrato del endpoint y una propuesta sobre
+  `User.role`.
+- **`api` sigue sin nada del MVP**: solo `User` y `Region`.
+- **Logo**: wordmark de texto fusionado (PR #25 de `web`).
 
 ### Lo que sí se reaprovecha del modelo anterior
 
@@ -57,35 +67,41 @@ No es de inmuebles, es infraestructura que el MVP necesita igual:
 
 - Regiones de Cuba y República Dominicana: el árbol en Redis, `/regions/suggest`,
   `/regions/children` y la cascada provincia/municipio/localidad de `web`
-  (`Domain-Vocabulary.md`, `micasaestuya-web/docs/regions.md`).
+  (`Domain-Vocabulary.md`, `micasaestuya-web/docs/regions.md`). El formulario de
+  Publicar ya usa la cascada.
 - Locales, i18n y el selector de país/idioma (`LocaleModal`).
-- Registro, login y JWT.
+- Registro, login y JWT (el `AuthModal`, ya usado en Publicar).
 - El sistema de diseño (`micasaestuya-web/docs/design-system.md`) y los
   componentes `Base*`.
+
+### Referencias
+
+Plataformas parecidas para mirar el flujo y la ficha de un alojamiento (no el
+modelo de negocio: todas cobran, micasaestuya no): Workaway, Worldpackers (la
+más fuerte en Centro y Sudamérica), HelpX y WWOOF (`product-vision.md` § Qué
+es).
 
 ---
 
 ## Lo siguiente, por orden
 
-1. **Fusionar las ramas `docs/align-after-pivot`** de los cuatro repos, y
-   después el PR #22 del logo (su CI pasa en cuanto `main` de `web` tenga el
-   `CLAUDE.md` formateado).
-2. **Dos decisiones abiertas**, pequeñas, antes de escribir el MVP:
-   - **Roles.** El schema de `User` ya tiene `role: guest | host | admin`. En el
-     producto hay anfitrión y huésped (el viajero); falta decidir cómo se
-     reflejan en `role` y, de paso, si el texto usa "huésped" o "viajero".
-   - **Cómo despliega Render.** La documentación dice dos cosas: que el Web
-     Service está conectado al repo de GitHub y construye desde ahí, y que
-     consume la imagen de `ghcr.io/marlonbdez/micasaestuya-api`. Hay que mirarlo
-     en el panel de Render y dejar una sola versión en
-     `Infrastructure-and-Deployment.md`, `README.md` y `CI-CD.md`.
-3. **Implementar el MVP**, poco a poco y con `api` primero, porque `web` depende
-   de sus endpoints:
-   - `api`: el modelo `Listing` (qué ofrece el anfitrión, qué tareas pide,
-     cuántas personas caben, contacto de WhatsApp, ubicación con `region`) y sus
-     rutas para publicar y listar. Los campos salen de la pantalla Publicar del
-     prototipo y se acuerdan antes de escribir código.
-   - `web`: las pantallas del prototipo, una a una.
+1. **Decidir `User.role`.** Es lo que bloquea implementar `Listing` en `api`.
+   Propuesta en [Listing.md](Listing.md) § `User.role`: publicar no cambia el
+   rol, y ser anfitrión se deduce de tener al menos un `Listing`. De paso,
+   decidir si el texto usa "huésped" o "viajero".
+2. **`api`: `Listing` y `POST /api/listings`** según [Listing.md](Listing.md), y
+   enchufarlo en `web` sustituyendo el servicio simulado.
+3. **Probar en `web` el login y el registro reales** dentro de Publicar. En la
+   verificación de la PR #26 solo se simularon.
+4. **`web`: Explorar y Detalle**, las pantallas que faltan del prototipo, con su
+   endpoint de listado en `api`. Con Detalle vuelve el botón "Ver mi
+   alojamiento" de la Confirmación.
+5. **Cómo despliega Render** (decisión pequeña, sigue abierta). La
+   documentación dice dos cosas: que el Web Service está conectado al repo de
+   GitHub y construye desde ahí, y que consume la imagen de
+   `ghcr.io/marlonbdez/micasaestuya-api`. Hay que mirarlo en el panel de Render
+   y dejar una sola versión en `Infrastructure-and-Deployment.md`, `README.md` y
+   `CI-CD.md`.
 
 Fuera del MVP, y no se empieza sin que el uso real lo pida: login social,
 confirmar estancias, disponibilidad por fechas, reseñas, pagos
@@ -165,6 +181,24 @@ Solo la que sigue valiendo después del pivote.
   En `api`, el schema de `User` tiene un campo `notes` que referencia un modelo
   `Note` inexistente, y `requests/*.rest` prueba unas rutas `/notes` que tampoco
   existen: restos de una plantilla inicial.
+
+- Restos del portal inmobiliario en `web` que ya se ven en pantalla: el
+  `<title>` y la descripción de `nuxt.config.ts` ("Alquiler, compra y venta de
+  casas"), la opción "Mis anuncios" del menú de usuario del header (lleva a
+  `/properties`, con las claves `MY_ADS` y `LOGOUT` sin traducir) y la clave
+  `header.advertise_property`, que ya nadie usa.
+- Los enlaces del footer (`/about-us`, `/faq`, `/privacy-policy`,
+  `/cookie-policy`, `/terms-and-conditions`, `/sitemap`) llevan a páginas que
+  no existen y no pasan por `localePath`. "Apóyanos" no está porque todavía no
+  hay URL de donaciones.
+- Publicar: si el usuario cierra el `AuthModal` sin identificarse y después hace
+  login desde el header estando en la misma página, se publica sin volver a
+  pulsar. Cerrarlo del todo obliga a tocar `AuthModal`.
+- `useDraftPhotos` (genérico) y `useAdPhotos` (el de `/post-ad`) duplican la
+  misma lógica. Se resuelve cuando se retire `/post-ad`.
+- `pages/login.vue` usa `v-model:checked` en `BaseCheckbox`, que no tiene esa
+  prop: el "Recuérdame" de esa página no funciona. Es una página del modelo
+  anterior; el login real va por el `AuthModal`.
 
 **Conocido y dejado así a propósito:** `micasaestuya-infra/seed/` tiene su propia
 copia de `regions_cu.json` y `regions_do.json` (iguales a las de `api/data/`), un
