@@ -56,8 +56,10 @@ lista de tareas pendientes.
   - `/post-ad` sigue en el código, sin enlazar desde ningún sitio. No se borra:
     se moverá a una carpeta aparte cuando se decida qué se reaprovecha.
 - **Especificación de `Listing` para `api`**: [Listing.md](Listing.md) (PR #3).
-  Schema, región, fotos reservadas, contrato del endpoint y una propuesta sobre
-  `User.role`.
+  Schema, región, fotos reservadas y contrato del endpoint.
+- **Roles decididos** ([ADR 007](ADRs.md)): no hay roles de producto y
+  `User.role` se quita. Anfitrión es quien tiene al menos un alojamiento. En los
+  textos, "viajero".
 - **`api` sigue sin nada del MVP**: solo `User` y `Region`.
 - **Logo**: wordmark de texto fusionado (PR #25 de `web`).
 
@@ -85,18 +87,15 @@ es).
 
 ## Lo siguiente, por orden
 
-1. **Decidir `User.role`.** Es lo que bloquea implementar `Listing` en `api`.
-   Propuesta en [Listing.md](Listing.md) § `User.role`: publicar no cambia el
-   rol, y ser anfitrión se deduce de tener al menos un `Listing`. De paso,
-   decidir si el texto usa "huésped" o "viajero".
-2. **`api`: `Listing` y `POST /api/listings`** según [Listing.md](Listing.md), y
-   enchufarlo en `web` sustituyendo el servicio simulado.
-3. **Probar en `web` el login y el registro reales** dentro de Publicar. En la
+1. **`api`: `Listing` y `POST /api/listings`** según [Listing.md](Listing.md), y
+   enchufarlo en `web` sustituyendo el servicio simulado. En la misma tarea se
+   retira `User.role` de `api` y `web` ([ADR 007](ADRs.md)).
+2. **Probar en `web` el login y el registro reales** dentro de Publicar. En la
    verificación de la PR #26 solo se simularon.
-4. **`web`: Explorar y Detalle**, las pantallas que faltan del prototipo, con su
+3. **`web`: Explorar y Detalle**, las pantallas que faltan del prototipo, con su
    endpoint de listado en `api`. Con Detalle vuelve el botón "Ver mi
    alojamiento" de la Confirmación.
-5. **Cómo despliega Render** (decisión pequeña, sigue abierta). La
+4. **Cómo despliega Render** (decisión pequeña, sigue abierta). La
    documentación dice dos cosas: que el Web Service está conectado al repo de
    GitHub y construye desde ahí, y que consume la imagen de
    `ghcr.io/marlonbdez/micasaestuya-api`. Hay que mirarlo en el panel de Render

@@ -124,24 +124,18 @@ body, se ignora.
 simulado de `create()` se sustituye por la llamada real, que ya está escrita en
 el comentario de ese método.
 
-## `User.role` al publicar — propuesta a confirmar
+## Publicar y los roles
 
-Está marcado como decisión abierta en `status.md`. La propuesta:
+Decidido en el [ADR 007](ADRs.md): **no hay roles de producto** y `User.role`
+se quita.
 
-- **Publicar no cambia `role`.** Un usuario sigue siendo `guest` aunque publique.
-- "Es anfitrión" **se deduce** de tener al menos un `Listing`
-  (`Listing.exists({ owner })`), no se guarda aparte. Así no pueden
-  desincronizarse (un `host` sin alojamientos, o alguien con alojamientos que
-  sigue siendo `guest`).
-- Una misma persona puede ser anfitrión y viajero a la vez. Un campo único no
-  puede representarlo sin volverse un array.
-- `role` se queda para **permisos**: `admin` para la moderación (reportar,
-  bloquear, `product-vision.md` § Confianza). `host` queda sin uso y se podría
-  quitar del enum cuando se confirme.
-
-La alternativa es promocionar a `host` en el `create` (un `updateOne` en el
-mismo model). Es más simple de consultar, pero trae los problemas de
-desincronización de arriba y no resuelve el caso de quien es las dos cosas.
+- Publicar no cambia nada en `User`.
+- "Es anfitrión" se deduce de tener al menos un `Listing`
+  (`Listing.exists({ owner })`); no se guarda aparte.
+- La tarea que implemente `Listing` retira también `role`: del schema de
+  `User`, del payload del JWT (`UserModel.login` y `UserModel.create`) y del
+  tipo `IUserInfo` de `web`. Los documentos que ya lo tengan en Mongo no
+  molestan: el campo se ignora al no estar en el schema.
 
 ## Fuera de esta especificación
 
