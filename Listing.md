@@ -4,9 +4,9 @@ title: Listing
 
 # Listing — especificación para `api`
 
-> **Estado: propuesta.** Todavía no hay código de `Listing` en `api`: solo existe
-> la pantalla Publicar en `web`, conectada a un servicio simulado. Este documento
-> es el contrato que ese servicio simula. Se revisa antes de implementarlo.
+> **Estado: implementado** en `api` (`POST /api/listings`, PR #20 de `api`) y
+> conectado desde Publicar en `web` (PR #31 de `web`). Si el código y este
+> documento no coinciden, manda el código; avísalo aquí.
 
 Un `Listing` es el alojamiento que publica un anfitrión: qué ofrece, qué tareas
 pide a cambio y cuántas personas caben a la vez (`product-vision.md` § Qué es el
@@ -113,16 +113,14 @@ Ruta con el middleware `auth` ya existente, como en el ejemplo de
 | Código | Cuándo                                | Body                                                                |
 | ------ | ------------------------------------- | ------------------------------------------------------------------- |
 | 201    | Creado                                | El `Listing` completo (`id`, `owner`, `photos: []`, `createdAt`, …) |
-| 400    | Falta un campo o no cumple las reglas | `{ "message": "..." }`, como los 400 de `/regions`                  |
+| 400    | Falta un campo o no cumple las reglas | `{ "error": "..." }`, del `errorHandler` común (como `/api/users`)   |
 | 401    | Sin token o token inválido            | Lo que ya devuelve el middleware `auth`                             |
 
 `owner` sale de `req.user.id` (lo pone el middleware `auth`); si viene en el
 body, se ignora.
 
-**Enchufarlo en `web`:** el único fichero que cambia es
-`micasaestuya-web/core/services/repository/modules/listing.ts`. El cuerpo
-simulado de `create()` se sustituye por la llamada real, que ya está escrita en
-el comentario de ese método.
+**En `web`:** la llamada vive en
+`micasaestuya-web/core/services/repository/modules/listing.ts`.
 
 ## Publicar y los roles
 
