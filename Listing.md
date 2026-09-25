@@ -4,9 +4,9 @@ title: Listing
 
 # Listing — especificación para `api`
 
-> **Estado: propuesta.** Todavía no hay código de `Listing` en `api`: solo existe
-> la pantalla Publicar en `web`, conectada a un servicio simulado. Este documento
-> es el contrato que ese servicio simula. Se revisa antes de implementarlo.
+> **Estado: implementado** en `api` (`POST /api/listings`, PR #20 de `api`) y
+> conectado desde Publicar en `web` (PR #31 de `web`). Si el código y este
+> documento no coinciden, manda el código; avísalo aquí.
 
 Un `Listing` es el alojamiento que publica un anfitrión: qué ofrece, qué tareas
 pide a cambio y cuántas personas caben a la vez (`product-vision.md` § Qué es el
@@ -113,35 +113,27 @@ Ruta con el middleware `auth` ya existente, como en el ejemplo de
 | Código | Cuándo                                | Body                                                                |
 | ------ | ------------------------------------- | ------------------------------------------------------------------- |
 | 201    | Creado                                | El `Listing` completo (`id`, `owner`, `photos: []`, `createdAt`, …) |
-| 400    | Falta un campo o no cumple las reglas | `{ "message": "..." }`, como los 400 de `/regions`                  |
+| 400    | Falta un campo o no cumple las reglas | `{ "error": "..." }`, del `errorHandler` común (como `/api/users`)   |
 | 401    | Sin token o token inválido            | Lo que ya devuelve el middleware `auth`                             |
 
 `owner` sale de `req.user.id` (lo pone el middleware `auth`); si viene en el
 body, se ignora.
 
-**Enchufarlo en `web`:** el único fichero que cambia es
-`micasaestuya-web/core/services/repository/modules/listing.ts`. El cuerpo
-simulado de `create()` se sustituye por la llamada real, que ya está escrita en
-el comentario de ese método.
+**En `web`:** la llamada vive en
+`micasaestuya-web/core/services/repository/modules/listing.ts`.
 
-## `User.role` al publicar — propuesta a confirmar
+## Publicar y los roles
 
-Está marcado como decisión abierta en `status.md`. La propuesta:
+Decidido en el [ADR 007](ADRs.md): **no hay roles de producto** y `User.role`
+se quita.
 
-- **Publicar no cambia `role`.** Un usuario sigue siendo `guest` aunque publique.
-- "Es anfitrión" **se deduce** de tener al menos un `Listing`
-  (`Listing.exists({ owner })`), no se guarda aparte. Así no pueden
-  desincronizarse (un `host` sin alojamientos, o alguien con alojamientos que
-  sigue siendo `guest`).
-- Una misma persona puede ser anfitrión y viajero a la vez. Un campo único no
-  puede representarlo sin volverse un array.
-- `role` se queda para **permisos**: `admin` para la moderación (reportar,
-  bloquear, `product-vision.md` § Confianza). `host` queda sin uso y se podría
-  quitar del enum cuando se confirme.
-
-La alternativa es promocionar a `host` en el `create` (un `updateOne` en el
-mismo model). Es más simple de consultar, pero trae los problemas de
-desincronización de arriba y no resuelve el caso de quien es las dos cosas.
+- Publicar no cambia nada en `User`.
+- "Es anfitrión" se deduce de tener al menos un `Listing`
+  (`Listing.exists({ owner })`); no se guarda aparte.
+- La tarea que implemente `Listing` retira también `role`: del schema de
+  `User`, del payload del JWT (`UserModel.login` y `UserModel.create`) y del
+  tipo `IUserInfo` de `web`. Los documentos que ya lo tengan en Mongo no
+  molestan: el campo se ignora al no estar en el schema.
 
 ## Fuera de esta especificación
 
