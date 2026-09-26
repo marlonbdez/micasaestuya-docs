@@ -122,6 +122,9 @@ es).
 4. **Más adelante, planificado**:
    - Migrar `web` a Nuxt 4 (Pinia, Vitest, `nuxt-icons`, ESLint 9), que es lo que
      pedían las versiones mayores.
+   - Pasar el **DNS a Cloudflare** para servir las fotos desde un dominio propio,
+     antes de que haya usuarios reales viendo fotos:
+     [Runbook-DNS-Cloudflare.md](Runbook-DNS-Cloudflare.md).
    - Un entorno de **staging** cuando haga falta probar cambios de base de datos
      antes de producción (opciones en
      [Entornos y ramas](Environments-and-Branches.md) § Staging).

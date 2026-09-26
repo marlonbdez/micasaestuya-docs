@@ -36,6 +36,7 @@ Netlify y Render despliegan directo desde los repos de GitHub.
 - [Vocabulario del dominio](Domain-Vocabulary.md) — `locale` / `region` / `address`
 - [Entornos y ramas](Environments-and-Branches.md)
 - [Infraestructura y despliegue](Infrastructure-and-Deployment.md)
+- [Runbook: DNS a Cloudflare](Runbook-DNS-Cloudflare.md) — pasar el DNS sin perder servicio
 - [CI/CD](CI-CD.md)
 - [Variables de entorno](Environment-Variables.md)
 - [Base de datos](Database.md)
