@@ -62,19 +62,55 @@ region: {
 
 ### Fotos
 
-En esta primera versión **no se suben ficheros**: no hay presupuesto ni
-almacenamiento decidido. Las fotos que el anfitrión elige se quedan en su
-navegador (IndexedDB) y no viajan en la petición.
+Decisión en el [ADR 009](ADRs.md): las fotos viven en **Cloudflare R2** y en Mongo
+solo van las URLs. Hoy **todavía no se suben**: las fotos que el anfitrión elige
+se quedan en su navegador (IndexedDB) y no viajan en la petición.
 
-- El schema ya tiene `photos: [String]` (URLs públicas), vacío por defecto.
-  Añadir la subida más adelante no cambia la forma del documento ni obliga a
-  migrar nada.
+**Reglas del producto**
+
+- De **1 a 7 fotos** por alojamiento.
+- Cada foto se optimiza en el navegador antes de subirla: **WebP** (JPEG de reserva
+  si el navegador no sabe codificar WebP), lado mayor de **1280 px**, sin EXIF, y una
+  **miniatura de 400 px** para Explorar. Estos valores sustituyen a los de
+  `useImageResize` (1600 px, JPEG) cuando se implemente.
+
+**Cómo se subirían** (diseño previsto, aún sin código)
+
+```mermaid
+sequenceDiagram
+  participant N as Navegador
+  participant A as api
+  participant R as Cloudflare R2
+  participant M as Mongo
+  N->>N: reduce la foto y hace la miniatura
+  N->>A: POST /api/listings/:id/photos (JWT)
+  A->>A: ¿el alojamiento es tuyo? ¿caben más fotos?
+  A-->>N: URL firmada y temporal
+  N->>R: sube el fichero directo
+  N->>A: confirma la subida
+  A->>M: guarda la URL en photos
+```
+
+La `api` no recibe los ficheros: el servidor de Render es pequeño y no debe cargar
+con imágenes. Mongo solo guarda `photos: [String]` (URLs públicas), vacío por
+defecto: añadir la subida no cambia la forma del documento ni obliga a migrar nada.
+
+**Reglas de seguridad**
+
 - `POST /api/listings` **ignora** `photos` si llega en el body, para que nadie
-  pueda meter URLs arbitrarias antes de que exista la subida.
-- Cuando se decida el almacenamiento, lo previsible es un endpoint aparte
-  (`POST /api/listings/:id/photos`) que reciba los ficheros ya reescalados por
-  `web` (1600 px, JPEG, sin EXIF: ver `micasaestuya-web/docs/post-ad-flow.md` § 9)
-  y devuelva las URLs.
+  pueda meter URLs arbitrarias.
+- La `api` solo acepta URLs que apunten a nuestro bucket y a ficheros que ella
+  misma autorizó.
+- Si se quita una foto o se borra el alojamiento, se borra también el fichero de
+  R2 (si no, quedan huérfanos ocupando espacio).
+
+**Por decidir al diseñarlo**
+
+- Cómo limitar el peso y el tipo de fichero en la URL firmada de R2.
+- Si el alojamiento se puede publicar sin foto mientras se suben (la regla "mínimo
+  1" pide que, al final, tenga al menos una).
+- El dominio público de las imágenes: `r2.dev` es para pruebas; en producción
+  conviene uno propio.
 
 ## Endpoint de creación
 

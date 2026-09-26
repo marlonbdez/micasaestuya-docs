@@ -45,3 +45,27 @@ Los e2e de `web` apuntaban a la API real de Render. Sus tests de auth creaban us
 - Un entorno de staging completo ya: sobredimensionado con tan pocos usuarios.
 
 **Staging** se monta cuando haga falta probar cambios de base de datos antes de aplicarlos en producción (ver [Entornos y ramas](Environments-and-Branches.md) § Staging).
+
+## ADR 009 — Las fotos viven en Cloudflare R2; en Mongo solo van las URLs
+
+Sin fotos reales, Explorar y Detalle no pueden mostrar nada. Hacía falta decidir dónde guardarlas.
+
+**Decisión:** las fotos se guardan en **Cloudflare R2** (almacén de ficheros compatible con S3). La `api` no las recibe ni las guarda: el navegador las sube directo a R2 con una URL firmada y temporal que la `api` concede, y en Mongo solo queda `photos: [String]` con las URLs. La base de datos no lleva nunca datos de imagen.
+
+**Por qué R2:** el plan gratuito da 10 GB de almacenamiento, 1 millón de escrituras y 10 millones de lecturas al mes, y **las descargas no se cobran** (las fotos se piden muchas veces). Pasado el plan gratuito son 0,015 $/GB al mes (cifras de la página de precios de Cloudflare, septiembre de 2026; conviene revisarlas antes de depender de ellas).
+
+**Reglas del producto:**
+- De **1 a 7 fotos** por alojamiento.
+- Cada foto se optimiza **en el navegador** antes de subirla: **WebP** (con JPEG de reserva si el navegador no sabe codificar WebP, como pasa en algunos Safari), lado mayor de **1280 px**, sin EXIF (que puede llevar el GPS de la casa), más una **miniatura de 400 px** para Explorar. Estimación sin medir: 100–150 KB la foto y 15–30 KB la miniatura, es decir, alrededor de 1 MB por alojamiento; los 10 GB gratuitos darían para unos 10.000 alojamientos.
+
+**Reglas de seguridad:**
+- La `api` solo acepta URLs que apunten a nuestro bucket y a ficheros que ella misma autorizó; nunca URLs arbitrarias del cliente.
+- Si se quita una foto o se borra un alojamiento, se borra también el fichero de R2, para que no se acumulen huérfanos.
+
+**Alternativas descartadas:**
+- **Cloudinary:** hace las miniaturas solo, pero su plan gratuito va por créditos y ata más al servicio. Como ya reescalamos en el navegador, no compensa.
+- **AWS S3 + CloudFront:** más configuración y cobra las descargas.
+- **Guardar las imágenes en Mongo:** Atlas gratuito tiene 512 MB y se llenaría enseguida.
+- **Disco de Render:** en el plan gratuito se borra al reiniciar.
+
+**Pendiente de diseñar:** cómo se limitan el peso y el tipo de fichero en una URL firmada de R2, si el alojamiento puede publicarse sin foto mientras se suben, y el dominio público de las imágenes (el `r2.dev` es para pruebas; en producción conviene uno propio). Detalle en [Listing.md § Fotos](Listing.md).
