@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-_Última revisión: 25-09-2026._
+_Última revisión: 26-09-2026._
 
 ## Antes de nada: este documento no es la fuente de verdad
 
@@ -35,33 +35,36 @@ lista de tareas pendientes.
 ## Dónde estamos
 
 - **Pivote decidido y documentado**: `product-vision.md` y ADR 006. La
-  documentación de `docs`, `web` y `api` ya está alineada (ramas
-  `docs/align-after-pivot` fusionadas). En `infra`, esa rama figura sin fusionar
-  en la copia local: **hay que confirmarlo en GitHub**.
+  documentación de `docs`, `web` y `api` está alineada. En `infra`, la rama
+  `docs/align-after-pivot` **nunca se fusionó**: `main` sigue en `e456005`.
 - **Prototipo del MVP hecho**, sobre el sistema de diseño real de `web`: Explorar,
   Detalle de alojamiento (con el botón de WhatsApp), Publicar y Confirmación.
-- **Primera pantalla del MVP en `web`** (PR #26): Publicar alojamiento
-  (`/publicar-alojamiento`) y Confirmación (`/publicar-alojamiento/publicado`),
-  más el header y el footer rediseñados según el prototipo. Detalle:
-  - Una sola página de formulario: título, región (`RegionCascade`, obligatoria
-    hasta el último nivel), fotos, descripción, tareas de colaboración,
-    capacidad y WhatsApp.
-  - El borrador vive en el store `listingDraft` (`localStorage`) y las fotos en
-    IndexedDB, **solo en el navegador**: todavía no se suben.
-  - Identificarse se pide solo al pulsar Publicar, con el `AuthModal` que ya
-    existía.
-  - **El envío es simulado**: no existe `POST /api/listings`. El único fichero
-    que cambia el día que exista es
-    `micasaestuya-web/core/services/repository/modules/listing.ts`.
-  - `/post-ad` sigue en el código, sin enlazar desde ningún sitio. No se borra:
-    se moverá a una carpeta aparte cuando se decida qué se reaprovecha.
-- **Especificación de `Listing` para `api`**: [Listing.md](Listing.md) (PR #3).
-  Schema, región, fotos reservadas y contrato del endpoint.
-- **Roles decididos** ([ADR 007](ADRs.md)): no hay roles de producto y
-  `User.role` se quita. Anfitrión es quien tiene al menos un alojamiento. En los
-  textos, "viajero".
-- **`api` sigue sin nada del MVP**: solo `User` y `Region`.
-- **Logo**: wordmark de texto fusionado (PR #25 de `web`).
+- **Publicar un alojamiento funciona de punta a punta** (web #26, #31; api #20):
+  - `web`: `/publicar-alojamiento` (un solo formulario: título, región con
+    `RegionCascade` hasta el último nivel, fotos, descripción, tareas,
+    capacidad y WhatsApp) y `/publicar-alojamiento/publicado`. Borrador en el
+    store `listingDraft` (`localStorage`) y fotos en IndexedDB. Identificarse se
+    pide solo al pulsar Publicar (`AuthModal`).
+  - `api`: `Listing` y `POST /api/listings` con auth, según
+    [Listing.md](Listing.md). La región se valida contra el árbol de regiones.
+    Límite de peticiones (`express-rate-limit`) en login, registro y publicar.
+  - **Las fotos todavía no se suben**: se quedan en el navegador.
+  - **Falta probarlo con un login real** (solo se ha probado con sesión
+    simulada).
+- **Sin roles** ([ADR 007](ADRs.md)): `User.role` retirado de `api` y `web`.
+  Anfitrión es quien tiene al menos un alojamiento. En los textos, "viajero".
+- **`web` sin restos visibles del portal**: título de la web, menú de usuario
+  ("Mis alojamientos (próximamente)", deshabilitada) y páginas del footer
+  (quiénes somos, FAQ, mapa web y legales; **las legales son un borrador** sin
+  revisión legal) (web #30).
+- **Dependencias**: `main` de `web` se rompió al fusionar actualizaciones
+  mayores de Dependabot; se revirtió (web #27) y Dependabot de `web` ya no
+  propone versiones mayores. **`api` todavía no tiene esa configuración** y
+  tiene 15 PR de Dependabot abiertas, casi todas mayores: no fusionarlas.
+- **Render construye `api` desde el repo de GitHub** (confirmado en el panel),
+  no desde la imagen de `ghcr.io`. La documentación aún dice lo contrario.
+- `/post-ad` sigue en el código, sin enlazar. No se borra: se moverá a una
+  carpeta aparte cuando se decida qué se reaprovecha.
 
 ### Lo que sí se reaprovecha del modelo anterior
 
@@ -87,20 +90,27 @@ es).
 
 ## Lo siguiente, por orden
 
-1. **`api`: `Listing` y `POST /api/listings`** según [Listing.md](Listing.md), y
-   enchufarlo en `web` sustituyendo el servicio simulado. En la misma tarea se
-   retira `User.role` de `api` y `web` ([ADR 007](ADRs.md)).
-2. **Probar en `web` el login y el registro reales** dentro de Publicar. En la
-   verificación de la PR #26 solo se simularon.
-3. **`web`: Explorar y Detalle**, las pantallas que faltan del prototipo, con su
-   endpoint de listado en `api`. Con Detalle vuelve el botón "Ver mi
-   alojamiento" de la Confirmación.
-4. **Cómo despliega Render** (decisión pequeña, sigue abierta). La
-   documentación dice dos cosas: que el Web Service está conectado al repo de
-   GitHub y construye desde ahí, y que consume la imagen de
-   `ghcr.io/marlonbdez/micasaestuya-api`. Hay que mirarlo en el panel de Render
-   y dejar una sola versión en `Infrastructure-and-Deployment.md`, `README.md` y
-   `CI-CD.md`.
+1. **Dependabot en `api`**: la misma configuración que `web` (sin versiones
+   mayores, menores agrupadas) y cerrar las PR de versiones mayores.
+2. **Probar el login y el registro reales** dentro de Publicar, en local.
+3. **Corregir la documentación de despliegue**: Render construye desde GitHub.
+   Dejarlo en `Infrastructure-and-Deployment.md`, `README.md`, `CI-CD.md` y
+   `micasaestuya-api/CLAUDE.md` ("lo consume Render").
+4. **Cabos sueltos**:
+   - Sentry graba el 100 % de las sesiones con `maskAllText: false` y
+     `blockAllMedia: false` (`web/sentry.client.config.ts`): ve textos como el
+     WhatsApp. Bajar el muestreo y enmascarar.
+   - `api/utils/config.js` tiene una contraseña de Mongo por defecto escrita en
+     el código de un repo público.
+   - "Compartir en redes sociales" del footer apunta a `#`.
+   - El círculo con la inicial del usuario en el header apenas se ve.
+   - La rama `docs/align-after-pivot` de `infra`: revisarla y fusionarla o
+     descartarla.
+5. **`web` + `api`: Explorar y Detalle**, las pantallas que faltan del
+   prototipo, con `GET /api/listings` (listar y ver uno). Con Detalle vuelven
+   "Ver mi alojamiento" en la Confirmación y "Mis alojamientos" en el menú.
+6. **Más adelante, planificado**: migrar `web` a Nuxt 4 (Pinia, Vitest,
+   `nuxt-icons`, ESLint 9), que es lo que pedían las versiones mayores.
 
 Fuera del MVP, y no se empieza sin que el uso real lo pida: login social,
 confirmar estancias, disponibilidad por fechas, reseñas, pagos
@@ -132,6 +142,29 @@ romper cosas por saltárselas.
 - **Verificar en el navegador**, no dar por hecho que funciona.
 - Las explicaciones apuntan a alguien de nivel _mid-junior_: el objetivo es que
   se entienda el porqué, no solo que compile.
+
+## Para retomar en una sesión nueva con Claude
+
+Lo aprendido trabajando que no está en otro sitio:
+
+- **Leer primero**, en este orden: `product-vision.md`, `ADRs.md`, este
+  documento, y el `CLAUDE.md` y `docs/` del repo que se toque.
+- **Git**: rama por tarea desde `main` actualizado (`git pull` antes), PR en
+  GitHub y el usuario fusiona. Un commit por punto cuando la PR junta varios.
+  Nada de commits sin que el usuario lo pida.
+- **Orden al tocar `api` y `web`**: `api` primero y se fusiona antes, porque
+  Render despliega `api` al fusionar en `main` y `web` depende del endpoint.
+- **Verificar antes de dar algo por hecho**: lint y tests en local
+  (`web`: `npm run lint`, `npm run test:unit:headless`; `api`: dentro del
+  contenedor, `docker compose exec express npm run lint` y `npm test`), y el
+  flujo en el navegador contra `localhost:3000`.
+- **Dependencias**: no fusionar actualizaciones mayores de Dependabot sin
+  planificarlas; se hacen a mano, una a una. Instalar paquetes de `api` con
+  `docker compose exec express npm install <paquete>`.
+- **Claude no crea cuentas ni escribe contraseñas**: las pruebas con login real
+  las hace el usuario, o se le da un usuario de prueba que ya exista.
+- **El límite de peticiones también aplica en local**: si una prueba lo agota,
+  `docker compose restart express` lo reinicia.
 
 ## Cómo levantar y comprobar
 
@@ -180,24 +213,10 @@ Solo la que sigue valiendo después del pivote.
   En `api`, el schema de `User` tiene un campo `notes` que referencia un modelo
   `Note` inexistente, y `requests/*.rest` prueba unas rutas `/notes` que tampoco
   existen: restos de una plantilla inicial.
-
-- Restos del portal inmobiliario en `web` que ya se ven en pantalla: el
-  `<title>` y la descripción de `nuxt.config.ts` ("Alquiler, compra y venta de
-  casas"), la opción "Mis anuncios" del menú de usuario del header (lleva a
-  `/properties`, con las claves `MY_ADS` y `LOGOUT` sin traducir) y la clave
-  `header.advertise_property`, que ya nadie usa.
-- Los enlaces del footer (`/about-us`, `/faq`, `/privacy-policy`,
-  `/cookie-policy`, `/terms-and-conditions`, `/sitemap`) llevan a páginas que
-  no existen y no pasan por `localePath`. "Apóyanos" no está porque todavía no
-  hay URL de donaciones.
-- Publicar: si el usuario cierra el `AuthModal` sin identificarse y después hace
-  login desde el header estando en la misma página, se publica sin volver a
-  pulsar. Cerrarlo del todo obliga a tocar `AuthModal`.
-- `useDraftPhotos` (genérico) y `useAdPhotos` (el de `/post-ad`) duplican la
-  misma lógica. Se resuelve cuando se retire `/post-ad`.
-- `pages/login.vue` usa `v-model:checked` en `BaseCheckbox`, que no tiene esa
-  prop: el "Recuérdame" de esa página no funciona. Es una página del modelo
-  anterior; el login real va por el `AuthModal`.
+- `web` y `api` sin tests de extremo a extremo del flujo de Publicar con login
+  real.
+- Solo `POST /api/listings` y `/api/users/login|create` tienen límite de
+  peticiones; el resto de rutas con auth, no.
 
 **Conocido y dejado así a propósito:** `micasaestuya-infra/seed/` tiene su propia
 copia de `regions_cu.json` y `regions_do.json` (iguales a las de `api/data/`), un
