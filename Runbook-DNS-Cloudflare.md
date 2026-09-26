@@ -11,6 +11,12 @@ configurar está limitado y Cloudflare lo reserva para desarrollo.
 **Cuándo:** antes de que haya usuarios reales viendo fotos. No antes: mientras tanto
 todo se desarrolla con `r2.dev`.
 
+**Regla de orden: el DNS se pasa antes de que se suba ninguna foto en producción.**
+En Mongo se guarda la URL completa de cada foto, así que una foto subida en producción
+con la URL de `r2.dev` quedaría apuntando a un dominio limitado. Si por lo que sea ya
+hay alguna, hay que reescribir esas URLs en Mongo (o borrar los alojamientos de prueba)
+al hacer el paso 6.
+
 **Objetivo:** cero caída. La web tiene que seguir cargando en todo momento.
 
 ## Qué es el DNS, en una línea
@@ -132,8 +138,9 @@ while true; do date +%T; curl -s -o /dev/null -w "%{http_code}\n" https://www.mi
 - **No borrar la zona de Netlify DNS** hasta pasadas al menos 48 horas de estabilidad.
 - En el bucket de producción de R2 → Settings → **Custom Domains** → `img.micasaestuya.com`.
 - Cambiar en Render la variable de la URL pública de las fotos (`R2_PUBLIC_URL`) al dominio nuevo
-  y comprobar que una foto carga. Las rutas de las fotos que ya haya en Mongo no se tocan
-  (se guardan como ruta, no como URL completa).
+  y comprobar que una foto carga. Solo las fotos subidas **desde ahora** usan el dominio
+  nuevo. Si hubiera alguna anterior en producción, sus URLs de `r2.dev` hay que
+  reescribirlas (ver la regla de orden del principio).
 
 ## Vuelta atrás
 
