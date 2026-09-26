@@ -26,7 +26,7 @@ Nota: lint/test/build corren con Node 20; la imagen Docker (`Dockerfile.prod`) u
 |-----|---------------|----------|
 | lint | todo menos push a main | npm run lint (Node 22) |
 | test | todo menos push a main | npm test, contra contenedores efímeros `mongo:6` / `redis:7-alpine` |
-| publish-docker | solo push a main | build + push a `ghcr.io/marlonbdez/micasaestuya-api`, lo consume Render |
+| publish-docker | solo push a main | build + push a `ghcr.io/marlonbdez/micasaestuya-api`, sin consumidor (Render construye desde GitHub) |
 
 ## infra (`.github/workflows/ci.yml`)
 

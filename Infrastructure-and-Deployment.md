@@ -16,5 +16,5 @@ k8s: abandonado, no se usa.
 
 | Repo | Path del registry | Estado |
 |------|--------------------|--------|
-| api | ghcr.io/marlonbdez/micasaestuya-api | Activo, Render lo consume. |
+| api | ghcr.io/marlonbdez/micasaestuya-api | Publicado, sin consumidor (Render construye desde el repo de GitHub, no desde la imagen). |
 | web | ghcr.io/marlonbdez/micasaestuya-web | Publicado, sin consumidor (Netlify no usa Docker). |
