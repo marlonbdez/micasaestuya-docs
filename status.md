@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-_Última revisión: 26-09-2026._
+_Última revisión: 27-09-2026._
 
 ## Antes de nada: este documento no es la fuente de verdad
 
@@ -73,7 +73,12 @@ lista de tareas pendientes.
   `ghcr.io` (documentado).
 - **Seguridad y privacidad**: Sentry Replay enmascara el texto y graba el 10 % de
   las sesiones, y `api` ya no lleva contraseñas de Mongo por defecto en el código.
-- **Los e2e no están bien**: fallan en la CI con `429` (ver "Lo siguiente" 1).
+- **Los e2e ya no tocan producción** (web #35, api #23, infra #5): en la CI corren
+  contra una API efímera con mongo y redis vacíos, y en local se puede apagar el
+  límite con `RATE_LIMIT=off` (nunca en producción). Explicación y diagramas en
+  [ADR 008](ADRs.md), [Testing.md](Testing.md), [CI-CD.md](CI-CD.md) y
+  [Entornos y ramas](Environments-and-Branches.md). El job sigue con
+  `continue-on-error: true` hasta que lleve un tiempo estable.
 - `/post-ad` sigue en el código, sin enlazar. No se borra: se moverá a una
   carpeta aparte cuando se decida qué se reaprovecha.
 
@@ -101,44 +106,23 @@ es).
 
 ## Lo siguiente, por orden
 
-1. **Que los tests e2e sean fiables y no toquen producción.** Es lo primero, porque
-   hoy la CI de `web` está en rojo en el job de e2e y cada PR carga con ese ruido.
-
-   *Qué pasa.* `api` limita el login y el registro a 20 peticiones por IP cada 15
-   minutos (`authLimiter`, `api/utils/rateLimit.js`), para frenar el prueba y error
-   con contraseñas. En producción cuenta por la IP real del usuario
-   (`app.set('trust proxy', 1)`, porque Render es un proxy), y solo se salta con
-   `NODE_ENV=test`. El job de e2e de `web` apunta a la **API real de Render**
-   (`https://micasaestuya-api.onrender.com/api`): sus tests de auth **crean
-   usuarios en la base de datos de producción** y salen todos de la IP compartida
-   del runner de GitHub, así que con dos ejecuciones seguidas (la de la PR y la del
-   push) el límite devuelve `429`. Visto en `web#33`: «logs in successfully» y
-   «tries to sign up with an existing email». En local, `express` corre en
-   `development` y le pasa lo mismo tras dos o tres ejecuciones
-   (`docker compose restart express` lo reinicia).
-
-   *Cómo dejarlo bien.* Una sola idea: **los tests nunca hablan con producción**.
-   - CI: el job de e2e levanta una API efímera (servicios `mongo` y `redis`, y la
-     `api` arrancada con `NODE_ENV=test`), con base de datos vacía y sin límite.
-   - Local: un opt-out explícito y visible (`RATE_LIMIT=off`) en
-     `api/utils/rateLimit.js` y en el `docker-compose.yml` de `infra`. El límite
-     nunca se desactiva por defecto.
-   - Un solo camino claro para arrancarlo, documentado en `Testing.md`.
-
-   Toca `web` (workflow de la CI), `api` (el límite) e `infra` (el opt-out local).
-   Antes de escribir código, explicárselo al usuario con calma: `authLimiter`,
-   `trust proxy` y por qué la separación de entornos.
-2. **Cabos sueltos**:
+1. **Cabos sueltos**:
    - "Compartir en redes sociales" del footer apunta a `#`.
    - `debug: true` en `web/sentry.client.config.ts` (ruidoso en producción).
-3. **`web` + `api`: Explorar y Detalle**, las pantallas que faltan del
+   - Quitar `continue-on-error: true` del job de e2e de `web` cuando lleve un
+     tiempo en verde, para que vuelva a bloquear las PR.
+2. **`web` + `api`: Explorar y Detalle**, las pantallas que faltan del
    prototipo, con `GET /api/listings` (listar y ver uno). Con Detalle vuelven
    "Ver mi alojamiento" en la Confirmación y "Mis alojamientos" en el menú. Antes
    hay que decidir **dónde se guardan las fotos**: sin subirlas, Explorar y
    Detalle no pueden mostrar imágenes reales.
-4. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
-5. **Más adelante, planificado**: migrar `web` a Nuxt 4 (Pinia, Vitest,
-   `nuxt-icons`, ESLint 9), que es lo que pedían las versiones mayores.
+3. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
+4. **Más adelante, planificado**:
+   - Migrar `web` a Nuxt 4 (Pinia, Vitest, `nuxt-icons`, ESLint 9), que es lo que
+     pedían las versiones mayores.
+   - Un entorno de **staging** cuando haga falta probar cambios de base de datos
+     antes de producción (opciones en
+     [Entornos y ramas](Environments-and-Branches.md) § Staging).
 
 Fuera del MVP, y no se empieza sin que el uso real lo pida: login social,
 confirmar estancias, disponibilidad por fechas, reseñas, pagos
@@ -230,7 +214,9 @@ Lo aprendido trabajando que no está en otro sitio:
 - **Claude no crea cuentas ni escribe contraseñas**: las pruebas con login real
   las hace el usuario, o se le da un usuario de prueba que ya exista.
 - **El límite de peticiones también aplica en local**: si una prueba lo agota,
-  `docker compose restart express` lo reinicia (ver "Lo siguiente" 1).
+  pon `RATE_LIMIT=off` en el `.env` de `infra` y `docker compose up -d express`, o
+  reinicia con `docker compose restart express` (ver [API.md](API.md) § Límite de
+  peticiones).
 - **El Chrome que maneja Claude es el del usuario, con su sesión.** Si hay que
   cerrar sesión, cambiar el tema o redimensionar la ventana para probar, se avisa y
   se deja como estaba; Claude no puede volver a entrar. Si hay dos Chrome
