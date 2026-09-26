@@ -30,6 +30,7 @@ Catálogo — no incluye valores reales/secretos, solo qué existe y dónde vive
 | REDIS_URI | Conexión a Redis (prod/dev según entorno) | Render, .env local |
 | REDIS_TEST_URI | Conexión a Redis usada solo por npm test | CI, .env local |
 | SECRET | Firma de JWT | Render, .env local |
+| RATE_LIMIT | `off` apaga el límite de peticiones **solo fuera de producción**; cualquier otro valor lo deja encendido | .env local (`infra`) |
 
 ## infra (docker-compose local)
 
@@ -38,6 +39,7 @@ Catálogo — no incluye valores reales/secretos, solo qué existe y dónde vive
 | MONGO_DB_USERNAME / MONGO_DB_PASSWORD / MONGO_DB_NAME | Credenciales del Mongo local |
 | MONGO_DB_URI / MONGO_DB_TEST_URI | Se inyectan al servicio express |
 | SECRET | JWT para desarrollo local |
+| RATE_LIMIT | `on` (por defecto) o `off`. Se pasa al servicio express; ver [API.md § Límite de peticiones](API.md) |
 
 
 Ver también: [Entornos y ramas](Environments-and-Branches.md)

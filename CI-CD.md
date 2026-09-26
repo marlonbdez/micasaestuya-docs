@@ -14,11 +14,37 @@ Jobs, todos en `ubuntu-latest`:
 | lint | todo menos push a main | npm run lint (Node 20) |
 | test-unit | todo menos push a main | Vitest + cobertura, sube el reporte como artifact |
 | build | siempre | `npm run generate` (build estático), sube `.output/public` como artifact |
-| e2e | todo menos push a main | Cypress en 2 shards, sobre el build estático servido con `serve` |
+| e2e | todo menos push a main | Cypress en 2 shards contra una **API efímera** (mongo y redis vacíos, `api` clonada y arrancada con `NODE_ENV=test`); ver abajo |
 | accessibility | todo menos push a main | pa11y-ci sobre el build estático (`continue-on-error`, no bloquea) |
 | publish-docker | solo push a main | build + push a `ghcr.io/marlonbdez/micasaestuya-web` |
 
 Nota: lint/test/build corren con Node 20; la imagen Docker (`Dockerfile.prod`) usa Node 22-alpine. Es una diferencia real, no un error de esta página — ver [Decisiones (ADRs)](ADRs.md) ADR 004.
+
+### El job e2e
+
+```mermaid
+flowchart LR
+  subgraph J["Job e2e · contenedor cypress/browsers (por cada shard)"]
+    direction TB
+    G["npm run generate<br/>NUXT_PUBLIC_API_BASE=localhost:3001"] --> S["serve .output/public :3000"]
+    API["api (repo clonado)<br/>NODE_ENV=test :3001"]
+    CY["Cypress"]
+    CY --> S
+    S -. "el navegador llama a" .-> API
+  end
+  MO[("mongo:6<br/>servicio")]
+  RE[("redis:7<br/>servicio")]
+  API --> MO
+  API --> RE
+```
+
+Lo que conviene saber:
+
+- **Nunca habla con producción.** Antes apuntaba a la API de Render: los tests creaban usuarios en la base real y todos salían de la misma IP, así que el límite de peticiones devolvía `429` ([ADR 008](ADRs.md)).
+- **Cada shard genera su propio build** (`npm run generate`). La URL de la api queda escrita dentro del build estático, así que no sirve reutilizar el del job `build`, que apunta a producción a propósito.
+- **`api` se clona de `main`** del repo `micasaestuya-api` (público, sin token) y se arranca con `NODE_ENV=test`, que salta el límite de peticiones.
+- **Todo en un solo paso.** El job corre en un `container:` y cada paso es su propio `docker exec`: un proceso lanzado con `&` no sobrevive al paso siguiente. Por eso la api, el servidor estático, la espera y Cypress van en el mismo `run` (detalle en `micasaestuya-web/docs/tooling.md` § 4).
+- `continue-on-error: true` sigue puesto: un fallo de e2e no bloquea la PR. Se quitará cuando lleve un tiempo estable.
 
 ## api (`.github/workflows/ci.yml`)
 

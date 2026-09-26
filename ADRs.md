@@ -32,3 +32,16 @@ Se abandona la idea original de micasaestuya como portal de compraventa/alquiler
 ## ADR 007 — Sin roles de producto: se quita `User.role`
 
 `User` tenía `role: guest | host | admin` sin que nada lo usara. Se quita. Una misma cuenta puede publicar su casa y viajar, así que anfitrión y viajero no son roles sino lo que cada uno hace: alguien es anfitrión si tiene al menos un `Listing` (`Listing.exists({ owner })`), sin guardarlo aparte, para que no pueda desincronizarse. Guardarlo en el JWT, además, lo dejaría congelado: el token no caduca. El único uso real de un rol serían los permisos de moderación (`product-vision.md` § Confianza), que no están en el MVP; cuando lleguen se añade lo mínimo que pidan, con su propio ADR. En los textos se dice "viajero", no "huésped". El código se retira en `api` y `web` en la misma tarea que implemente `Listing`.
+
+## ADR 008 — Los e2e corren contra una API efímera; staging, aplazado
+
+Los e2e de `web` apuntaban a la API real de Render. Sus tests de auth creaban usuarios en la base de datos de producción (con un email real), y todos salían de la IP compartida del runner de GitHub, así que dos ejecuciones seguidas (la de la PR y la del push) agotaban el límite de peticiones y devolvían `429`.
+
+**Decisión:** los tests nunca hablan con producción. En la CI, el job de e2e levanta una API efímera (servicios `mongo` y `redis` vacíos y la `api` clonada y arrancada con `NODE_ENV=test`), y se destruye al acabar. En local, el límite se puede apagar a propósito con `RATE_LIMIT=off`, que **se ignora en producción**; por defecto el límite nunca está apagado.
+
+**Alternativas descartadas:**
+- Desactivar el límite en producción para los tests: debilita la seguridad de producción y no evita que se ensucie la base real.
+- Una base de staging en el mismo clúster de Atlas: comparte credenciales con producción, y un error de configuración podría tocarla.
+- Un entorno de staging completo ya: sobredimensionado con tan pocos usuarios.
+
+**Staging** se monta cuando haga falta probar cambios de base de datos antes de aplicarlos en producción (ver [Entornos y ramas](Environments-and-Branches.md) § Staging).
