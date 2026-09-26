@@ -118,6 +118,57 @@ confirmar estancias, disponibilidad por fechas, reseñas, pagos
 
 ---
 
+## Optimizaciones para una PR propia
+
+Ideas para que el código siga siendo simple, ligero y fiable sin depender de que
+alguien se acuerde. Ninguna está empezada: se eligen y se hacen en una PR pequeña
+cada una, o agrupadas si tocan lo mismo. El criterio general está en
+[Code-Conventions.md](Code-Conventions.md) § Criterio general.
+
+**Automatizar lo que hoy es una regla escrita**
+
+1. **Comprobar los iconos solos.** Un script en el hook o en la CI que falle si un
+   SVG de `assets/icons/` tiene más de un `<path>`, trae colores o pesa de más, salvo
+   las banderas y los usados como `background-image`
+   (`micasaestuya-web/docs/design-system.md` § Iconos).
+2. **Detectar lo que sobra** con una herramienta como `knip` (ficheros, exports y
+   dependencias sin uso). Ya conocidos: `HomeSearchVacaciones` y `TheHero`, que no
+   se pintan en la home, y los restos de la deuda anotada.
+3. **Presupuesto de peso** del bundle y de las fuentes en la CI, para notar cuándo
+   algo engorda.
+4. **Accesibilidad más allá de la home.** `pa11y-ci` ya corre en la CI, pero solo
+   sobre la home: ampliarlo a Publicar y al menú de usuario abierto, y a Explorar y
+   Detalle cuando existan.
+5. **Plantilla de PR** con una lista corta: claro y oscuro, móvil y escritorio, con
+   y sin sesión, y lo que no se pudo probar.
+
+**Deuda concreta que salió al construir el menú**
+
+6. **Términos del registro obligatorios de verdad.** `SignUp.vue` los valida con
+   `bool().required()`, que deja pasar `false` (`micasaestuya-web/docs/gotchas.md` § 11).
+7. **Los e2e de la CI van contra la API real, y el límite de peticiones los tumba.**
+   El job de e2e apunta a `https://micasaestuya-api.onrender.com/api`: los tests de
+   auth **crean usuarios en la base de datos de producción** y comparten la IP del
+   runner de GitHub. `authLimiter` (20 peticiones por IP cada 15 minutos en login y
+   registro) devuelve `429` en cuanto hay dos ejecuciones seguidas (la de la PR y la
+   del push): visto en `web#33`, donde fallaron «logs in successfully» y «tries to
+   sign up with an existing email». En local pasa lo mismo tras dos o tres
+   ejecuciones, porque `express` corre en `development` y el límite solo se salta con
+   `NODE_ENV=test` (se arregla con `docker compose restart express`).
+   Propuesta: e2e contra una API efímera en la CI (servicios `mongo` y `redis`, y la
+   `api` arrancada con `NODE_ENV=test`, que ya se salta el límite), y en local un
+   opt-out explícito (`RATE_LIMIT=off`) en `api/utils/rateLimit.js` y en el
+   `docker-compose.yml` de `infra`. El límite no se desactiva nunca por defecto.
+8. **Iconos recoloreables también en los formularios.** Pasar `check`,
+   `error-circle`, `location`, `search` y `chevron-down` de `background-image` a
+   `mask` con una variable (toca `BaseInput`, `BaseCheckbox`, `BaseSelect`,
+   `BaseTextarea` y `BaseFileInput`); permitiría borrar `chevron-down-white`.
+9. **Borrar el modelo anterior** cuando se decida qué se reaprovecha: `/post-ad`,
+   el store `adFlow` y sus iconos (`apartments`, `buildings`, `garage`,
+   `landscape`).
+
+---
+
 ## Cómo trabajar en este proyecto
 
 Reglas de trabajo acordadas, y no son de cortesía: se llegó a ellas después de
