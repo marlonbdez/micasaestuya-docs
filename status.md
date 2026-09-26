@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-_Última revisión: 26-09-2026._
+_Última revisión: 27-09-2026._
 
 ## Antes de nada: este documento no es la fuente de verdad
 
@@ -35,34 +35,50 @@ lista de tareas pendientes.
 ## Dónde estamos
 
 - **Pivote decidido y documentado**: `product-vision.md` y ADR 006. La
-  documentación de `docs`, `web` y `api` está alineada. En `infra`, la rama
-  `docs/align-after-pivot` **nunca se fusionó**: `main` sigue en `e456005`.
+  documentación de los cuatro repos está alineada (la de `infra` ya se fusionó).
 - **Prototipo del MVP hecho**, sobre el sistema de diseño real de `web`: Explorar,
-  Detalle de alojamiento (con el botón de WhatsApp), Publicar y Confirmación.
-- **Publicar un alojamiento funciona de punta a punta** (web #26, #31; api #20):
+  Detalle de alojamiento (con el botón de WhatsApp), Publicar y Confirmación, y el
+  header con su menú de usuario (artboards de escritorio y móvil).
+- **Publicar un alojamiento funciona de punta a punta** y está probado con login
+  real (web #26, #31; api #20):
   - `web`: `/publicar-alojamiento` (un solo formulario: título, región con
     `RegionCascade` hasta el último nivel, fotos, descripción, tareas,
-    capacidad y WhatsApp) y `/publicar-alojamiento/publicado`. Borrador en el
-    store `listingDraft` (`localStorage`) y fotos en IndexedDB. Identificarse se
-    pide solo al pulsar Publicar (`AuthModal`).
+    capacidad, WhatsApp y un **checkbox obligatorio** para aceptar que el trato
+    se cierra entre las partes) y `/publicar-alojamiento/publicado`. Borrador en
+    el store `listingDraft` (`localStorage`) y fotos en IndexedDB. Identificarse
+    se pide solo al pulsar Publicar (`AuthModal`).
+  - En Publicar, el layout es **`minimal`**: header con el logo y "Salir", y
+    footer solo con el copyright. La confirmación usa el layout normal.
   - `api`: `Listing` y `POST /api/listings` con auth, según
     [Listing.md](Listing.md). La región se valida contra el árbol de regiones.
     Límite de peticiones (`express-rate-limit`) en login, registro y publicar.
   - **Las fotos todavía no se suben**: se quedan en el navegador.
-  - **Falta probarlo con un login real** (solo se ha probado con sesión
-    simulada).
+- **Header con menú de usuario** (web #33): la barra lleva el logo, Explorar y
+  Publicar (solo en pantallas anchas) y una pastilla que abre `UserMenu`: entrar,
+  registrarse, idioma y país, tema, FAQ y, con sesión, la identidad y cerrar
+  sesión. En móvil, Explorar y Publicar pasan al menú. "Mis alojamientos" sigue
+  deshabilitada hasta que exista `GET /api/listings`.
+- **VueUse** (`@vueuse/nuxt`) sustituye a `click-outside-vue3`
+  (`onClickOutside`). Los iconos se limpiaron: uno o dos trazos, `currentColor`,
+  y fuera los que nadie usaba (`micasaestuya-web/docs/design-system.md` § Iconos).
 - **Sin roles** ([ADR 007](ADRs.md)): `User.role` retirado de `api` y `web`.
   Anfitrión es quien tiene al menos un alojamiento. En los textos, "viajero".
-- **`web` sin restos visibles del portal**: título de la web, menú de usuario
-  ("Mis alojamientos (próximamente)", deshabilitada) y páginas del footer
+- **`web` sin restos visibles del portal**: título de la web y páginas del footer
   (quiénes somos, FAQ, mapa web y legales; **las legales son un borrador** sin
   revisión legal) (web #30).
-- **Dependencias**: `main` de `web` se rompió al fusionar actualizaciones
-  mayores de Dependabot; se revirtió (web #27) y Dependabot de `web` ya no
-  propone versiones mayores. **`api` todavía no tiene esa configuración** y
-  tiene 15 PR de Dependabot abiertas, casi todas mayores: no fusionarlas.
-- **Render construye `api` desde el repo de GitHub** (confirmado en el panel),
-  no desde la imagen de `ghcr.io`. La documentación aún dice lo contrario.
+- **Dependencias**: Dependabot de `web` y de `api` no propone versiones mayores
+  (se hacen a mano, una a una) y agrupa menores y parches. Quedan abiertas las PR
+  de Dependabot de `web` (#29, #28, #7, #4) y de `infra` (#3, #2), sin revisar.
+- **Render construye `api` desde el repo de GitHub**, no desde la imagen de
+  `ghcr.io` (documentado).
+- **Seguridad y privacidad**: Sentry Replay enmascara el texto y graba el 10 % de
+  las sesiones, y `api` ya no lleva contraseñas de Mongo por defecto en el código.
+- **Los e2e ya no tocan producción** (web #35, api #23, infra #5): en la CI corren
+  contra una API efímera con mongo y redis vacíos, y en local se puede apagar el
+  límite con `RATE_LIMIT=off` (nunca en producción). Explicación y diagramas en
+  [ADR 008](ADRs.md), [Testing.md](Testing.md), [CI-CD.md](CI-CD.md) y
+  [Entornos y ramas](Environments-and-Branches.md). El job sigue con
+  `continue-on-error: true` hasta que lleve un tiempo estable.
 - `/post-ad` sigue en el código, sin enlazar. No se borra: se moverá a una
   carpeta aparte cuando se decida qué se reaprovecha.
 
@@ -90,27 +106,23 @@ es).
 
 ## Lo siguiente, por orden
 
-1. **Dependabot en `api`**: la misma configuración que `web` (sin versiones
-   mayores, menores agrupadas) y cerrar las PR de versiones mayores.
-2. **Probar el login y el registro reales** dentro de Publicar, en local.
-3. **Corregir la documentación de despliegue**: Render construye desde GitHub.
-   Dejarlo en `Infrastructure-and-Deployment.md`, `README.md`, `CI-CD.md` y
-   `micasaestuya-api/CLAUDE.md` ("lo consume Render").
-4. **Cabos sueltos**:
-   - Sentry graba el 100 % de las sesiones con `maskAllText: false` y
-     `blockAllMedia: false` (`web/sentry.client.config.ts`): ve textos como el
-     WhatsApp. Bajar el muestreo y enmascarar.
-   - `api/utils/config.js` tiene una contraseña de Mongo por defecto escrita en
-     el código de un repo público.
+1. **Cabos sueltos**:
    - "Compartir en redes sociales" del footer apunta a `#`.
-   - El círculo con la inicial del usuario en el header apenas se ve.
-   - La rama `docs/align-after-pivot` de `infra`: revisarla y fusionarla o
-     descartarla.
-5. **`web` + `api`: Explorar y Detalle**, las pantallas que faltan del
+   - `debug: true` en `web/sentry.client.config.ts` (ruidoso en producción).
+   - Quitar `continue-on-error: true` del job de e2e de `web` cuando lleve un
+     tiempo en verde, para que vuelva a bloquear las PR.
+2. **`web` + `api`: Explorar y Detalle**, las pantallas que faltan del
    prototipo, con `GET /api/listings` (listar y ver uno). Con Detalle vuelven
-   "Ver mi alojamiento" en la Confirmación y "Mis alojamientos" en el menú.
-6. **Más adelante, planificado**: migrar `web` a Nuxt 4 (Pinia, Vitest,
-   `nuxt-icons`, ESLint 9), que es lo que pedían las versiones mayores.
+   "Ver mi alojamiento" en la Confirmación y "Mis alojamientos" en el menú. Antes
+   hay que decidir **dónde se guardan las fotos**: sin subirlas, Explorar y
+   Detalle no pueden mostrar imágenes reales.
+3. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
+4. **Más adelante, planificado**:
+   - Migrar `web` a Nuxt 4 (Pinia, Vitest, `nuxt-icons`, ESLint 9), que es lo que
+     pedían las versiones mayores.
+   - Un entorno de **staging** cuando haga falta probar cambios de base de datos
+     antes de producción (opciones en
+     [Entornos y ramas](Environments-and-Branches.md) § Staging).
 
 Fuera del MVP, y no se empieza sin que el uso real lo pida: login social,
 confirmar estancias, disponibilidad por fechas, reseñas, pagos
@@ -146,24 +158,11 @@ cada una, o agrupadas si tocan lo mismo. El criterio general está en
 
 6. **Términos del registro obligatorios de verdad.** `SignUp.vue` los valida con
    `bool().required()`, que deja pasar `false` (`micasaestuya-web/docs/gotchas.md` § 11).
-7. **Los e2e de la CI van contra la API real, y el límite de peticiones los tumba.**
-   El job de e2e apunta a `https://micasaestuya-api.onrender.com/api`: los tests de
-   auth **crean usuarios en la base de datos de producción** y comparten la IP del
-   runner de GitHub. `authLimiter` (20 peticiones por IP cada 15 minutos en login y
-   registro) devuelve `429` en cuanto hay dos ejecuciones seguidas (la de la PR y la
-   del push): visto en `web#33`, donde fallaron «logs in successfully» y «tries to
-   sign up with an existing email». En local pasa lo mismo tras dos o tres
-   ejecuciones, porque `express` corre en `development` y el límite solo se salta con
-   `NODE_ENV=test` (se arregla con `docker compose restart express`).
-   Propuesta: e2e contra una API efímera en la CI (servicios `mongo` y `redis`, y la
-   `api` arrancada con `NODE_ENV=test`, que ya se salta el límite), y en local un
-   opt-out explícito (`RATE_LIMIT=off`) en `api/utils/rateLimit.js` y en el
-   `docker-compose.yml` de `infra`. El límite no se desactiva nunca por defecto.
-8. **Iconos recoloreables también en los formularios.** Pasar `check`,
+7. **Iconos recoloreables también en los formularios.** Pasar `check`,
    `error-circle`, `location`, `search` y `chevron-down` de `background-image` a
    `mask` con una variable (toca `BaseInput`, `BaseCheckbox`, `BaseSelect`,
    `BaseTextarea` y `BaseFileInput`); permitiría borrar `chevron-down-white`.
-9. **Borrar el modelo anterior** cuando se decida qué se reaprovecha: `/post-ad`,
+8. **Borrar el modelo anterior** cuando se decida qué se reaprovecha: `/post-ad`,
    el store `adFlow` y sus iconos (`apartments`, `buildings`, `garage`,
    `landscape`).
 
@@ -215,7 +214,20 @@ Lo aprendido trabajando que no está en otro sitio:
 - **Claude no crea cuentas ni escribe contraseñas**: las pruebas con login real
   las hace el usuario, o se le da un usuario de prueba que ya exista.
 - **El límite de peticiones también aplica en local**: si una prueba lo agota,
-  `docker compose restart express` lo reinicia.
+  pon `RATE_LIMIT=off` en el `.env` de `infra` y `docker compose up -d express`, o
+  reinicia con `docker compose restart express` (ver [API.md](API.md) § Límite de
+  peticiones).
+- **El Chrome que maneja Claude es el del usuario, con su sesión.** Si hay que
+  cerrar sesión, cambiar el tema o redimensionar la ventana para probar, se avisa y
+  se deja como estaba; Claude no puede volver a entrar. Si hay dos Chrome
+  conectados, se pregunta cuál.
+- **Las dependencias de `web` viven en dos sitios**: el `node_modules` del host
+  (lint y tests) y el del contenedor `nuxt` (servidor de desarrollo). Tras cambiar
+  `package.json`: `npm install` en `web` y `docker compose exec nuxt npm install`.
+- **El `pre-push` de `web` compila y pisa `.nuxt`**, que comparte con el servidor
+  de desarrollo: después de un `push`, `docker compose restart nuxt` (desde
+  `infra`). Los e2e en local: `npx cypress run --spec cypress/e2e/auth.cy.ts
+  --browser chrome` (el aviso "Bad CPU type" del final es inocuo).
 
 ## Cómo levantar y comprobar
 

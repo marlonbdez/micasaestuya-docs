@@ -5,14 +5,38 @@ title: Architecture
 
 ## Diagrama de alto nivel
 
-```
-[Usuario] -> [web (Nuxt 3, Netlify)] -> [api (Express, Render)] -> [MongoDB Atlas]
-                                                                 -> [Redis (Upstash)]
+```mermaid
+flowchart LR
+  B["Navegador"]
+  W["web<br/>Nuxt 3 estático<br/>Netlify"]
+  A["api<br/>Express<br/>Render"]
+  M[("MongoDB Atlas<br/>usuarios, alojamientos")]
+  R[("Redis · Upstash<br/>árbol de regiones")]
+
+  B -- "1. descarga la web (HTML, JS, CSS)" --> W
+  B -- "2. peticiones JSON + JWT" --> A
+  A --> M
+  A --> R
 ```
 
 - `web`: SSG/Nuxt, se sirve estático desde Netlify (CDN), sin servidor Node corriendo en producción para el frontend.
-- `api`: Express corriendo como Web Service en Render, habla con Mongo Atlas (datos de negocio: usuarios, alojamientos, estancias) y con Redis/Upstash (caché de localización).
+- Como la web es estática, **las llamadas a la api las hace el navegador**, no un servidor de `web`. Por eso la URL de la api (`NUXT_PUBLIC_API_BASE`) queda escrita dentro del build.
+- `api`: Express corriendo como Web Service en Render, habla con Mongo Atlas (datos de negocio: usuarios y alojamientos) y con Redis/Upstash (el árbol de regiones).
 - No hay comunicación directa entre `web` y las bases de datos — todo pasa por `api`.
+
+## Por dónde pasa una petición en la api
+
+```mermaid
+flowchart LR
+  P["Petición"] --> C["cors"] --> J["json"] --> L["requestLogger"] --> R{"router"}
+  R -- "POST /users/login<br/>POST /users/create" --> AL["authLimiter<br/>20 / 15 min por IP"]
+  R -- "POST /listings" --> WL["writeLimiter<br/>30 / 15 min por IP"] --> AU["auth (JWT)"]
+  AL --> CT["controller"]
+  AU --> CT
+  CT --> MO["model"] --> DB[("Mongo")]
+```
+
+Los limitadores van **antes** que `auth`: así se frena el prueba y error con contraseñas y también el abuso de quien no tiene sesión. Ver [API.md § Límite de peticiones](API.md).
 
 ## web — capas internas
 
