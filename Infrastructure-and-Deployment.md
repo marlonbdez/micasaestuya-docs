@@ -9,6 +9,7 @@ title: Infrastructure and Deployment
 | api | Render.com | Web Service conectado al repo de GitHub (`marlonbdez/micasaestuya-api`). | https://micasaestuya-api.onrender.com |
 | MongoDB | MongoDB Atlas | Cluster de producción. | — |
 | Redis | Upstash | Base de producción. | — |
+| DNS | Netlify DNS (NS1); dominio comprado en Launchpad | Los registros de `micasaestuya.com` los guarda Netlify. Se pasará a Cloudflare antes de servir fotos: [Runbook](Runbook-DNS-Cloudflare.md). | — |
 
 k8s: abandonado, no se usa.
 

@@ -68,4 +68,4 @@ Sin fotos reales, Explorar y Detalle no pueden mostrar nada. Hacía falta decidi
 - **Guardar las imágenes en Mongo:** Atlas gratuito tiene 512 MB y se llenaría enseguida.
 - **Disco de Render:** en el plan gratuito se borra al reiniciar.
 
-**Pendiente de diseñar:** cómo se limitan el peso y el tipo de fichero en una URL firmada de R2, si el alojamiento puede publicarse sin foto mientras se suben, y el dominio público de las imágenes (el `r2.dev` es para pruebas; en producción conviene uno propio). Detalle en [Listing.md § Fotos](Listing.md).
+**Pendiente de diseñar:** cómo se limitan el peso y el tipo de fichero en una URL firmada de R2, si el alojamiento puede publicarse sin foto mientras se suben, y el dominio público de las imágenes (el `r2.dev` es para pruebas; en producción conviene uno propio, y eso exige pasar el DNS a Cloudflare: ver el [Runbook](Runbook-DNS-Cloudflare.md)). Detalle en [Listing.md § Fotos](Listing.md).
