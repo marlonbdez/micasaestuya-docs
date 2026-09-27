@@ -55,8 +55,8 @@ Sin fotos reales, Explorar y Detalle no pueden mostrar nada. Hacía falta decidi
 **Por qué R2:** el plan gratuito da 10 GB de almacenamiento, 1 millón de escrituras y 10 millones de lecturas al mes, y **las descargas no se cobran** (las fotos se piden muchas veces). Pasado el plan gratuito son 0,015 $/GB al mes (cifras de la página de precios de Cloudflare, septiembre de 2026; conviene revisarlas antes de depender de ellas).
 
 **Reglas del producto:**
-- De **1 a 7 fotos** por alojamiento.
-- Cada foto se optimiza **en el navegador** antes de subirla: **WebP** (con JPEG de reserva si el navegador no sabe codificar WebP, como pasa en algunos Safari), lado mayor de **1280 px**, sin EXIF (que puede llevar el GPS de la casa), más una **miniatura de 400 px** para Explorar. Estimación sin medir: 100–150 KB la foto y 15–30 KB la miniatura, es decir, alrededor de 1 MB por alojamiento; los 10 GB gratuitos darían para unos 10.000 alojamientos.
+- De **1 a 10 fotos** por alojamiento, como Airbnb, Workaway y Worldpackers.
+- Cada foto se optimiza **en el navegador** antes de subirla: **WebP** (con JPEG de reserva si el navegador no sabe codificar WebP, como pasa en algunos Safari), lado mayor de **1600 px** (buen tamaño sin pasarse) y sin EXIF (que puede llevar el GPS de la casa), más una **miniatura de 400 px** para Explorar (el tamaño habitual de una tarjeta en rejilla). Estimación sin medir: 150–250 KB la foto y 20–30 KB la miniatura, es decir, unos 2–3 MB por alojamiento; los 10 GB gratuitos darían para unos 3.000–5.000 alojamientos.
 
 **Reglas de seguridad:**
 - La `api` solo acepta URLs que apunten a nuestro bucket y a ficheros que ella misma autorizó; nunca URLs arbitrarias del cliente.
