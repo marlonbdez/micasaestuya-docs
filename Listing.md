@@ -62,19 +62,69 @@ region: {
 
 ### Fotos
 
-En esta primera versión **no se suben ficheros**: no hay presupuesto ni
-almacenamiento decidido. Las fotos que el anfitrión elige se quedan en su
-navegador (IndexedDB) y no viajan en la petición.
+Decisión en el [ADR 009](ADRs.md): las fotos viven en **Cloudflare R2** y en Mongo
+solo van las URLs. Hoy **todavía no se suben**: las fotos que el anfitrión elige
+se quedan en su navegador (IndexedDB) y no viajan en la petición.
 
-- El schema ya tiene `photos: [String]` (URLs públicas), vacío por defecto.
-  Añadir la subida más adelante no cambia la forma del documento ni obliga a
-  migrar nada.
+**Reglas del producto**
+
+- De **1 a 10 fotos** por alojamiento (el máximo habitual en Airbnb, Workaway y
+  Worldpackers).
+- Cada foto se optimiza en el navegador antes de subirla: **WebP** (JPEG de reserva
+  si el navegador no sabe codificar WebP), lado mayor de **1600 px** (buen tamaño
+  sin pasarse, el mismo que ya usaba `useImageResize` antes de esta decisión, solo
+  que ahora en WebP) y sin EXIF, más una **miniatura de 400 px** para Explorar
+  (el tamaño habitual de una tarjeta en rejilla).
+
+**Cómo se sube, ya implementado** (`api` #24)
+
+```mermaid
+sequenceDiagram
+  participant N as Navegador
+  participant A as api
+  participant R as Cloudflare R2
+  participant M as Mongo
+  N->>N: reduce la foto y hace la miniatura
+  N->>A: POST /:id/photos { photos: [{ contentType }] }
+  A->>A: ¿el alojamiento es tuyo? ¿caben más fotos?
+  A-->>N: por foto: photoId + URL firmada de la foto y de la miniatura
+  N->>R: PUT directo de cada fichero (30 s de margen)
+  N->>A: POST /:id/photos/confirm { photoIds }
+  A->>R: HEAD de cada fichero: ¿existe? ¿webp o jpeg? ¿pesa lo esperado?
+  A->>M: si todo bien, guarda la URL en photos (si no, borra el fichero de R2 y 400)
+```
+
+- `POST /:id/photos`: hasta 10 fotos por alojamiento (contando las que ya tenga).
+- `POST /:id/photos/confirm`: solo pasan fotos `image/webp` o `image/jpeg` de como
+  mucho 1 MB, y miniaturas de como mucho 100 KB (holgado sobre lo que sale de
+  `web` a 1600 px y 400 px). La firma no puede limitar el peso, así que se
+  comprueba aquí. Confirmar la misma foto dos veces no la duplica.
+- `DELETE /:id/photos/:photoId`: quita la URL y borra los dos ficheros de R2.
+- La `api` no recibe los ficheros: el servidor de Render es pequeño y no debe
+  cargar con imágenes. Mongo solo guarda `photos: [String]` (URLs públicas).
+- El nombre de cada fichero lo pone la `api` (`listings/<id>/<photoId>`, con un
+  UUID que genera ella), nunca el cliente.
+
+**Reglas de seguridad**
+
 - `POST /api/listings` **ignora** `photos` si llega en el body, para que nadie
-  pueda meter URLs arbitrarias antes de que exista la subida.
-- Cuando se decida el almacenamiento, lo previsible es un endpoint aparte
-  (`POST /api/listings/:id/photos`) que reciba los ficheros ya reescalados por
-  `web` (1600 px, JPEG, sin EXIF: ver `micasaestuya-web/docs/post-ad-flow.md` § 9)
-  y devuelva las URLs.
+  pueda meter URLs arbitrarias.
+- Un alojamiento ajeno o inexistente da el mismo `404` en los tres endpoints de
+  fotos, para no distinguir uno de otro.
+- Si se quita una foto o se borra el alojamiento, se borra también el fichero de
+  R2 (si no, quedan huérfanos ocupando espacio). **El borrado del alojamiento
+  todavía no existe** como endpoint: mientras tanto, si un alojamiento se queda
+  huérfano de fotos por un fallo a medio publicar, se deja así (ver `status.md`).
+
+**Pendiente**
+
+- La parte de `web`: reescalar, pedir las URLs, subir y confirmar dentro del
+  flujo de Publicar.
+- Mostrar en Explorar solo los alojamientos con al menos una foto confirmada
+  (la regla de "mínimo 1" la exige `web` al publicar, pero la `api` no puede
+  garantizarla si la subida falla después de crear el alojamiento).
+- El dominio público de las imágenes: `r2.dev` es para pruebas; en producción
+  conviene uno propio ([Runbook DNS](Runbook-DNS-Cloudflare.md)).
 
 ## Endpoint de creación
 

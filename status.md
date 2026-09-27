@@ -113,9 +113,12 @@ es).
      tiempo en verde, para que vuelva a bloquear las PR.
 2. **`web` + `api`: Explorar y Detalle**, las pantallas que faltan del
    prototipo, con `GET /api/listings` (listar y ver uno). Con Detalle vuelven
-   "Ver mi alojamiento" en la Confirmación y "Mis alojamientos" en el menú. Antes
-   hay que decidir **dónde se guardan las fotos**: sin subirlas, Explorar y
-   Detalle no pueden mostrar imágenes reales.
+   "Ver mi alojamiento" en la Confirmación y "Mis alojamientos" en el menú. Antes,
+   **la subida de fotos**: sin ella, Explorar y Detalle no pueden mostrar imágenes
+   reales. Ya implementado ([ADR 009](ADRs.md), `Listing.md` § Fotos): Cloudflare
+   R2, de 1 a 10 fotos, WebP a 1600 px con miniatura de 400 px, y en Mongo solo las
+   URLs (api #24, infra #6). Falta la parte de `web`: reescalar, subir y wirear el
+   flujo de Publicar.
 3. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
 4. **Más adelante, planificado**:
    - Migrar `web` a Nuxt 4 (Pinia, Vitest, `nuxt-icons`, ESLint 9), que es lo que
