@@ -58,7 +58,12 @@ lista de tareas pendientes.
   Publicar (solo en pantallas anchas) y una pastilla que abre `UserMenu`: entrar,
   registrarse, idioma y país, tema, FAQ y, con sesión, la identidad y cerrar
   sesión. En móvil, Explorar y Publicar pasan al menú. "Mis alojamientos" sigue
-  deshabilitada hasta que exista `GET /api/listings`.
+  deshabilitada hasta que exista `GET /api/listings/mine`.
+- **Explorar y Detalle** (`/explorar` y `/explorar/[id]`, web #40) con
+  `GET /api/listings` y `GET /api/listings/:id` (api #26), públicos. En el detalle,
+  "Caben N personas" en vez de plazas libres (la disponibilidad necesita reservas,
+  fuera del MVP), el nombre de pila del anfitrión y el botón de WhatsApp con un
+  mensaje ya escrito. La Confirmación vuelve a tener "Ver mi alojamiento".
 - **VueUse** (`@vueuse/nuxt`) sustituye a `click-outside-vue3`
   (`onClickOutside`). Los iconos se limpiaron: uno o dos trazos, `currentColor`,
   y fuera los que nadie usaba (`micasaestuya-web/docs/design-system.md` § Iconos).
@@ -80,7 +85,8 @@ lista de tareas pendientes.
   [ADR 008](ADRs.md), [Testing.md](Testing.md), [CI-CD.md](CI-CD.md) y
   [Entornos y ramas](Environments-and-Branches.md). El job ya bloquea las PR
   (sin `continue-on-error`).
-- `/post-ad` se borró (web #37); queda en el historial de git.
+- `/post-ad` (web #37), `/home2` y el buscador vacacional (web #39) se borraron;
+  quedan en el historial de git.
 
 ### Lo que sí se reaprovecha del modelo anterior
 
@@ -108,10 +114,8 @@ es).
 
 1. **Cabo suelto**: "Compartir en redes sociales" del footer apunta a `#`; no hay
    redes sociales todavía.
-2. **`web` + `api`: Explorar y Detalle**, las pantallas que faltan del
-   prototipo, con `GET /api/listings` (listar y ver uno). Con Detalle vuelven
-   "Ver mi alojamiento" en la Confirmación y "Mis alojamientos" en el menú. Las
-   fotos ya se suben a R2, así que ya hay imágenes reales que mostrar.
+2. **"Mis alojamientos"**: `GET /api/listings/mine` (con token) en `api`, y en
+   `web` la lista y el enlace del menú, hoy deshabilitado.
 3. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
 4. **Más adelante, planificado**:
    - Migrar `web` a Nuxt 4 (Pinia, Vitest, `nuxt-icons`, ESLint 9), que es lo que
@@ -140,8 +144,8 @@ cada una, o agrupadas si tocan lo mismo. El criterio general está en
    las banderas y los usados como `background-image`
    (`micasaestuya-web/docs/design-system.md` § Iconos).
 2. **Detectar lo que sobra** con una herramienta como `knip` (ficheros, exports y
-   dependencias sin uso). Ya conocidos: `HomeSearchVacaciones` y `TheHero`, que no
-   se pintan en la home, y los restos de la deuda anotada.
+   dependencias sin uso). Ya conocidos: `BaseSwitch` (se deja a propósito) y los
+   restos de la deuda anotada.
 3. **Presupuesto de peso** del bundle y de las fuentes en la CI, para notar cuándo
    algo engorda.
 4. **Accesibilidad más allá de la home.** `pa11y-ci` ya corre en la CI, pero solo
@@ -250,9 +254,6 @@ primero**, porque `web` depende de su endpoint.
 
 Solo la que sigue valiendo después del pivote.
 
-- `locales/es-cu.json` tiene **la clave `home` repetida dos veces**. Al parsear
-  gana la segunda, así que `home.hero.title` y `home.cuba_banner` de la primera
-  se pierden. Seguramente se reescriba con la home del MVP; hasta entonces, ojo.
 - `modals.locale` conserva `region_label`, `language_label` y `save_button`, que
   no los usa nadie.
 - Tests del backend para `/regions/children` y para el filtro por nivel.
