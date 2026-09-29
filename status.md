@@ -52,7 +52,8 @@ lista de tareas pendientes.
   - `api`: `Listing` y `POST /api/listings` con auth, según
     [Listing.md](Listing.md). La región se valida contra el árbol de regiones.
     Límite de peticiones (`express-rate-limit`) en login, registro y publicar.
-  - **Las fotos todavía no se suben**: se quedan en el navegador.
+  - **Las fotos se suben a Cloudflare R2** al publicar ([ADR 009](ADRs.md), web #36, api #24):
+    WebP a 1600 px con miniatura de 400 px, de 1 a 10 fotos; en Mongo solo las URLs.
 - **Header con menú de usuario** (web #33): la barra lleva el logo, Explorar y
   Publicar (solo en pantallas anchas) y una pastilla que abre `UserMenu`: entrar,
   registrarse, idioma y país, tema, FAQ y, con sesión, la identidad y cerrar
@@ -77,10 +78,9 @@ lista de tareas pendientes.
   contra una API efímera con mongo y redis vacíos, y en local se puede apagar el
   límite con `RATE_LIMIT=off` (nunca en producción). Explicación y diagramas en
   [ADR 008](ADRs.md), [Testing.md](Testing.md), [CI-CD.md](CI-CD.md) y
-  [Entornos y ramas](Environments-and-Branches.md). El job sigue con
-  `continue-on-error: true` hasta que lleve un tiempo estable.
-- `/post-ad` sigue en el código, sin enlazar. No se borra: se moverá a una
-  carpeta aparte cuando se decida qué se reaprovecha.
+  [Entornos y ramas](Environments-and-Branches.md). El job ya bloquea las PR
+  (sin `continue-on-error`).
+- `/post-ad` se borró (web #37); queda en el historial de git.
 
 ### Lo que sí se reaprovecha del modelo anterior
 
@@ -106,19 +106,12 @@ es).
 
 ## Lo siguiente, por orden
 
-1. **Cabos sueltos**:
-   - "Compartir en redes sociales" del footer apunta a `#`.
-   - `debug: true` en `web/sentry.client.config.ts` (ruidoso en producción).
-   - Quitar `continue-on-error: true` del job de e2e de `web` cuando lleve un
-     tiempo en verde, para que vuelva a bloquear las PR.
+1. **Cabo suelto**: "Compartir en redes sociales" del footer apunta a `#`; no hay
+   redes sociales todavía.
 2. **`web` + `api`: Explorar y Detalle**, las pantallas que faltan del
    prototipo, con `GET /api/listings` (listar y ver uno). Con Detalle vuelven
-   "Ver mi alojamiento" en la Confirmación y "Mis alojamientos" en el menú. Antes,
-   **la subida de fotos**: sin ella, Explorar y Detalle no pueden mostrar imágenes
-   reales. Ya implementado ([ADR 009](ADRs.md), `Listing.md` § Fotos): Cloudflare
-   R2, de 1 a 10 fotos, WebP a 1600 px con miniatura de 400 px, y en Mongo solo las
-   URLs (api #24, infra #6). Falta la parte de `web`: reescalar, subir y wirear el
-   flujo de Publicar.
+   "Ver mi alojamiento" en la Confirmación y "Mis alojamientos" en el menú. Las
+   fotos ya se suben a R2, así que ya hay imágenes reales que mostrar.
 3. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
 4. **Más adelante, planificado**:
    - Migrar `web` a Nuxt 4 (Pinia, Vitest, `nuxt-icons`, ESLint 9), que es lo que
@@ -165,9 +158,6 @@ cada una, o agrupadas si tocan lo mismo. El criterio general está en
    `error-circle`, `location`, `search` y `chevron-down` de `background-image` a
    `mask` con una variable (toca `BaseInput`, `BaseCheckbox`, `BaseSelect`,
    `BaseTextarea` y `BaseFileInput`); permitiría borrar `chevron-down-white`.
-8. **Borrar el modelo anterior** cuando se decida qué se reaprovecha: `/post-ad`,
-   el store `adFlow` y sus iconos (`apartments`, `buildings`, `garage`,
-   `landscape`).
 
 ---
 

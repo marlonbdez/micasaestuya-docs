@@ -44,7 +44,7 @@ Lo que conviene saber:
 - **Cada shard genera su propio build** (`npm run generate`). La URL de la api queda escrita dentro del build estático, así que no sirve reutilizar el del job `build`, que apunta a producción a propósito.
 - **`api` se clona de `main`** del repo `micasaestuya-api` (público, sin token) y se arranca con `NODE_ENV=test`, que salta el límite de peticiones.
 - **Todo en un solo paso.** El job corre en un `container:` y cada paso es su propio `docker exec`: un proceso lanzado con `&` no sobrevive al paso siguiente. Por eso la api, el servidor estático, la espera y Cypress van en el mismo `run` (detalle en `micasaestuya-web/docs/tooling.md` § 4).
-- `continue-on-error: true` sigue puesto: un fallo de e2e no bloquea la PR. Se quitará cuando lleve un tiempo estable.
+- Un fallo de e2e bloquea la PR.
 
 ## api (`.github/workflows/ci.yml`)
 
