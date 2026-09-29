@@ -80,7 +80,8 @@ lista de tareas pendientes.
   [ADR 008](ADRs.md), [Testing.md](Testing.md), [CI-CD.md](CI-CD.md) y
   [Entornos y ramas](Environments-and-Branches.md). El job ya bloquea las PR
   (sin `continue-on-error`).
-- `/post-ad` se borró (web #37); queda en el historial de git.
+- `/post-ad` (web #37), `/home2` y el buscador vacacional (web #39) se borraron;
+  quedan en el historial de git.
 
 ### Lo que sí se reaprovecha del modelo anterior
 
@@ -140,8 +141,8 @@ cada una, o agrupadas si tocan lo mismo. El criterio general está en
    las banderas y los usados como `background-image`
    (`micasaestuya-web/docs/design-system.md` § Iconos).
 2. **Detectar lo que sobra** con una herramienta como `knip` (ficheros, exports y
-   dependencias sin uso). Ya conocidos: `HomeSearchVacaciones` y `TheHero`, que no
-   se pintan en la home, y los restos de la deuda anotada.
+   dependencias sin uso). Ya conocidos: `BaseSwitch` (se deja a propósito) y los
+   restos de la deuda anotada.
 3. **Presupuesto de peso** del bundle y de las fuentes en la CI, para notar cuándo
    algo engorda.
 4. **Accesibilidad más allá de la home.** `pa11y-ci` ya corre en la CI, pero solo
@@ -250,9 +251,6 @@ primero**, porque `web` depende de su endpoint.
 
 Solo la que sigue valiendo después del pivote.
 
-- `locales/es-cu.json` tiene **la clave `home` repetida dos veces**. Al parsear
-  gana la segunda, así que `home.hero.title` y `home.cuba_banner` de la primera
-  se pierden. Seguramente se reescriba con la home del MVP; hasta entonces, ojo.
 - `modals.locale` conserva `region_label`, `language_label` y `save_button`, que
   no los usa nadie.
 - Tests del backend para `/regions/children` y para el filtro por nivel.
