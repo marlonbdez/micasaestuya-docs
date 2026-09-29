@@ -4,8 +4,9 @@ title: Listing
 
 # Listing — especificación para `api`
 
-> **Estado: implementado** en `api` (`POST /api/listings`, PR #20 de `api`) y
-> conectado desde Publicar en `web` (PR #31 de `web`). Si el código y este
+> **Estado: implementado** en `api` (`POST /api/listings`, PR #20 de `api`;
+> `GET /api/listings` y `GET /api/listings/:id`) y conectado desde Publicar en
+> `web` (PR #31 de `web`). Si el código y este
 > documento no coinciden, manda el código; avísalo aquí.
 
 Un `Listing` es el alojamiento que publica un anfitrión: qué ofrece, qué tareas
@@ -63,8 +64,8 @@ region: {
 ### Fotos
 
 Decisión en el [ADR 009](ADRs.md): las fotos viven en **Cloudflare R2** y en Mongo
-solo van las URLs. Hoy **todavía no se suben**: las fotos que el anfitrión elige
-se quedan en su navegador (IndexedDB) y no viajan en la petición.
+solo van las URLs. Publicar ya las sube (web #36): mientras se publica, las que
+elige el anfitrión esperan en su navegador (IndexedDB).
 
 **Reglas del producto**
 
@@ -118,11 +119,6 @@ sequenceDiagram
 
 **Pendiente**
 
-- La parte de `web`: reescalar, pedir las URLs, subir y confirmar dentro del
-  flujo de Publicar.
-- Mostrar en Explorar solo los alojamientos con al menos una foto confirmada
-  (la regla de "mínimo 1" la exige `web` al publicar, pero la `api` no puede
-  garantizarla si la subida falla después de crear el alojamiento).
 - El dominio público de las imágenes: `r2.dev` es para pruebas; en producción
   conviene uno propio ([Runbook DNS](Runbook-DNS-Cloudflare.md)).
 
@@ -172,6 +168,37 @@ body, se ignora.
 **En `web`:** la llamada vive en
 `micasaestuya-web/core/services/repository/modules/listing.ts`.
 
+## Endpoints de lectura
+
+Públicos, sin token. Un alojamiento ya es público al publicarse, WhatsApp
+incluido (lo dice la política de privacidad).
+
+### `GET /api/listings`
+
+Lo que pinta Explorar. Solo salen los alojamientos con **al menos una foto
+confirmada**: la subida ocurre después de crear el alojamiento y puede fallar, y
+`web` exige "mínimo 1" al publicar pero la `api` no puede garantizarlo.
+
+- Orden: el más nuevo primero.
+- Paginación: `?page=` (desde 1) y `?limit=` (por defecto 12, máximo 50). Un valor
+  que no sea un entero positivo es un 400. Una página pasada del final da `items`
+  vacío, no un error.
+- Cada elemento lleva solo lo que pinta una tarjeta: `id`, `title`, `region`,
+  `tasks`, `capacity` y `photos`. Sin `description` ni `whatsapp`.
+
+```json
+{ "items": [{ "id": "…", "title": "…", "region": {}, "tasks": [], "capacity": 2, "photos": [] }], "total": 25 }
+```
+
+`web` calcula si hay más páginas con `page * limit < total`. No hay filtros
+todavía: se añaden cuando el uso real los pida.
+
+### `GET /api/listings/:id`
+
+El alojamiento completo. `owner` viene poblado con `{ id, firstName }`: solo el
+nombre de pila, para pintar "Anfitrión: María" y para que `web` sepa si el
+alojamiento es del usuario con sesión. Un id que no existe o mal formado da 404.
+
 ## Publicar y los roles
 
 Decidido en el [ADR 007](ADRs.md): **no hay roles de producto** y `User.role`
@@ -187,5 +214,5 @@ se quita.
 
 ## Fuera de esta especificación
 
-Listar (`GET /api/listings`), ver el detalle, editar y borrar. Van con las
-pantallas Explorar y Detalle, que son tareas aparte.
+Los alojamientos del usuario con sesión (`GET /api/listings/mine`), editar y
+borrar. Van con "Mis alojamientos", que es una tarea aparte.

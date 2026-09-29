@@ -16,9 +16,15 @@ GET  /api/users/current    -> usuario actual (requiere auth)
 GET  /api/users/profile    -> alias de /current (requiere auth)
 GET  /api/regions/suggest  -> autocompletado de regiones (Redis)
 GET  /api/regions/children -> hijos de una región (Redis)
+GET  /api/listings         -> listar alojamientos con foto, paginado (público)
+GET  /api/listings/:id     -> un alojamiento (público)
+POST /api/listings         -> publicar un alojamiento (requiere auth)
+POST   /api/listings/:id/photos          -> URLs firmadas para subir fotos (requiere auth)
+POST   /api/listings/:id/photos/confirm  -> confirmar las fotos subidas (requiere auth)
+DELETE /api/listings/:id/photos/:photoId -> quitar una foto (requiere auth)
 ```
 
-Estos son los únicos endpoints que existen hoy. Los del MVP (publicar un alojamiento, listarlos) todavía no están construidos — ver `product-vision.md` para qué hace falta.
+Los detalles de los endpoints de alojamientos están en [Listing.md](Listing.md).
 
 ## Autenticación
 
