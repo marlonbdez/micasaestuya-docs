@@ -25,11 +25,13 @@ Catálogo — no incluye valores reales/secretos, solo qué existe y dónde vive
 |----------|-----|-------------------|
 | PORT | Puerto del servidor Express | Render, .env local |
 | NODE_ENV | development / test / production | Render, .env local |
-| MONGODB_URI | Conexión a Mongo (prod/dev según entorno) | Render, .env local |
+| MONGODB_URI | Conexión a Mongo (prod/dev según entorno). **Lleva el nombre de la base** entre la `/` y el `?` (`…mongodb.net/micasaestuya?retryWrites=true&w=majority`); sin él, Mongo usa la base `test` | Render, .env local |
 | MONGODB_TEST_URI | Conexión a Mongo usada solo por npm test | CI, .env local |
 | REDIS_URI | Conexión a Redis (prod/dev según entorno) | Render, .env local |
 | REDIS_TEST_URI | Conexión a Redis usada solo por npm test | CI, .env local |
 | SECRET | Firma de JWT | Render, .env local |
+| R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET | Subida de fotos a Cloudflare R2 (un bucket y un token por entorno) | Render, .env local (`infra`) |
+| R2_PUBLIC_URL | URL **pública** del bucket (Public Development URL o dominio propio), sin barra final. **No** es el endpoint S3 `…r2.cloudflarestorage.com`, que es privado y deja las fotos sin cargar | Render, .env local (`infra`) |
 | RATE_LIMIT | `off` apaga el límite de peticiones **solo fuera de producción**; cualquier otro valor lo deja encendido | .env local (`infra`) |
 
 ## infra (docker-compose local)

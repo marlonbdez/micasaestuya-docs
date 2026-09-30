@@ -75,6 +75,12 @@ lista de tareas pendientes.
 - **Dependencias**: Dependabot de `web` y de `api` no propone versiones mayores
   (se hacen a mano, una a una) y agrupa menores y parches. Quedan abiertas las PR
   de Dependabot de `web` (#29, #28, #7, #4) y de `infra` (#3, #2), sin revisar.
+- **Producción, Atlas y R2** (29-09-2026): la base de producción es `micasaestuya`
+  (antes la `api` escribía en `test`, porque la cadena de conexión no llevaba nombre
+  de base), con un usuario propio `micasaestuya-api` con `readWrite` solo sobre esa
+  base. Los datos de `test` eran del modelo anterior y no se migraron. Las fotos
+  no cargaban porque `R2_PUBLIC_URL` apuntaba al endpoint S3 privado y no a la URL
+  pública del bucket (`Environment-Variables.md`).
 - **Render construye `api` desde el repo de GitHub**, no desde la imagen de
   `ghcr.io` (documentado).
 - **Seguridad y privacidad**: Sentry Replay enmascara el texto y graba el 10 % de
@@ -116,8 +122,12 @@ es).
    redes sociales todavía.
 2. **"Mis alojamientos"**: `GET /api/listings/mine` (con token) en `api`, y en
    `web` la lista y el enlace del menú, hoy deshabilitado.
-3. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
-4. **Más adelante, planificado**:
+3. **Guardar solo la clave de cada foto** (`listings/<id>/<uuid>`) en Mongo y
+   componer la URL al leer, para que cambiar de `r2.dev` a un dominio propio no
+   obligue a migrar la base. Hoy se guardan URLs completas (ADR 009). Es más barato
+   ahora, con la base casi vacía.
+4. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
+5. **Más adelante, planificado**:
    - Migrar `web` a Nuxt 4 (Pinia, Vitest, `nuxt-icons`, ESLint 9), que es lo que
      pedían las versiones mayores.
    - Un entorno de **staging** cuando haga falta probar cambios de base de datos
@@ -156,9 +166,7 @@ cada una, o agrupadas si tocan lo mismo. El criterio general está en
 
 **Deuda concreta que salió al construir el menú**
 
-6. **Términos del registro obligatorios de verdad.** `SignUp.vue` los valida con
-   `bool().required()`, que deja pasar `false` (`micasaestuya-web/docs/gotchas.md` § 11).
-7. **Iconos recoloreables también en los formularios.** Pasar `check`,
+6. **Iconos recoloreables también en los formularios.** Pasar `check`,
    `error-circle`, `location`, `search` y `chevron-down` de `background-image` a
    `mask` con una variable (toca `BaseInput`, `BaseCheckbox`, `BaseSelect`,
    `BaseTextarea` y `BaseFileInput`); permitiría borrar `chevron-down-white`.
@@ -254,8 +262,6 @@ primero**, porque `web` depende de su endpoint.
 
 Solo la que sigue valiendo después del pivote.
 
-- `modals.locale` conserva `region_label`, `language_label` y `save_button`, que
-  no los usa nadie.
 - Tests del backend para `/regions/children` y para el filtro por nivel.
 - Los tres flags mutables de `useRegionSuggest` (`debounceTimer`,
   `isRequestBlocked`, `skipNextSearch`) más la llamada recursiva de `search()`
@@ -265,11 +271,6 @@ Solo la que sigue valiendo después del pivote.
   secuenciales**, uno por prefijo. Agruparlos en un `pipeline` de ioredis es lo
   que puede hacer que sembrar staging deje de doler.
 - JWT sin expiración ni refresh (`API.md`).
-- Código muerto: `web/core/services/repository/modules/Authentication.ts` importa
-  un `HttpFactory` que ya no existe; nadie lo usa (el módulo vivo es `auth.ts`).
-  En `api`, el schema de `User` tiene un campo `notes` que referencia un modelo
-  `Note` inexistente, y `requests/*.rest` prueba unas rutas `/notes` que tampoco
-  existen: restos de una plantilla inicial.
 - `web` y `api` sin tests de extremo a extremo del flujo de Publicar con login
   real.
 - Solo `POST /api/listings` y `/api/users/login|create` tienen límite de
