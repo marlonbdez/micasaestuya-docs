@@ -57,8 +57,12 @@ lista de tareas pendientes.
 - **Header con menú de usuario** (web #33): la barra lleva el logo, Explorar y
   Publicar (solo en pantallas anchas) y una pastilla que abre `UserMenu`: entrar,
   registrarse, idioma y país, tema, FAQ y, con sesión, la identidad y cerrar
-  sesión. En móvil, Explorar y Publicar pasan al menú. "Mis alojamientos" sigue
-  deshabilitada hasta que exista `GET /api/listings/mine`.
+  sesión. En móvil, Explorar y Publicar pasan al menú.
+- **Mis alojamientos** (`/mis-alojamientos`, web #45, api #28 y #29): la lista del
+  usuario con `GET /api/listings/mine` (incluye los que no tienen fotos, con un
+  aviso) y borrar con confirmación en la tarjeta (`DELETE /api/listings/:id`, que
+  también borra las fotos de R2). El enlace del menú ya funciona. **Editar** queda
+  pendiente.
 - **Explorar y Detalle** (`/explorar` y `/explorar/[id]`, web #40) con
   `GET /api/listings` y `GET /api/listings/:id` (api #26), públicos. En el detalle,
   "Caben N personas" en vez de plazas libres (la disponibilidad necesita reservas,
@@ -120,8 +124,8 @@ es).
 
 1. **Cabo suelto**: "Compartir en redes sociales" del footer apunta a `#`; no hay
    redes sociales todavía.
-2. **"Mis alojamientos"**: `GET /api/listings/mine` (con token) en `api`, y en
-   `web` la lista y el enlace del menú, hoy deshabilitado.
+2. **Editar un alojamiento** desde "Mis alojamientos" (`PATCH /api/listings/:id`
+   y el formulario de Publicar reutilizado).
 3. **Guardar solo la clave de cada foto** (`listings/<id>/<uuid>`) en Mongo y
    componer la URL al leer, para que cambiar de `r2.dev` a un dominio propio no
    obligue a migrar la base. Hoy se guardan URLs completas (ADR 009). Es más barato
