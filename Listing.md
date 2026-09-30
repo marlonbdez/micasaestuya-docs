@@ -212,7 +212,20 @@ se quita.
   tipo `IUserInfo` de `web`. Los documentos que ya lo tengan en Mongo no
   molestan: el campo se ignora al no estar en el schema.
 
+### `GET /api/listings/mine`
+
+Con token. Los alojamientos del usuario, los nuevos primero, con los mismos campos
+que una tarjeta de Explorar. A diferencia de `GET /api/listings`, **incluye los que
+no tienen fotos**: si la subida falló, quien publicó tiene que poder verlos y
+terminarlos. Sin paginación: un anfitrión tiene pocos.
+
+### `DELETE /api/listings/:id`
+
+Con token, solo el dueño. Borra el alojamiento y, de R2, el fichero y la miniatura
+de cada foto. El documento se borra primero: si R2 falla después quedan ficheros
+huérfanos, nunca un alojamiento con fotos rotas. Ajeno, inexistente o mal formado:
+404. Responde 204.
+
 ## Fuera de esta especificación
 
-Los alojamientos del usuario con sesión (`GET /api/listings/mine`), editar y
-borrar. Van con "Mis alojamientos", que es una tarea aparte.
+Editar (`PATCH`). Va con "Mis alojamientos", que es una tarea aparte.
