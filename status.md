@@ -53,7 +53,7 @@ lista de tareas pendientes.
     [Listing.md](Listing.md). La región se valida contra el árbol de regiones.
     Límite de peticiones (`express-rate-limit`) en login, registro y publicar.
   - **Las fotos se suben a Cloudflare R2** al publicar ([ADR 009](ADRs.md), web #36, api #24):
-    WebP a 1600 px con miniatura de 400 px, de 1 a 10 fotos; en Mongo solo las URLs.
+    WebP a 1600 px con miniatura de 400 px, de 1 a 10 fotos; en Mongo solo el id de cada foto.
 - **Header con menú de usuario** (web #33): la barra lleva el logo, Explorar y
   Publicar (solo en pantallas anchas) y una pastilla que abre `UserMenu`: entrar,
   registrarse, idioma y país, tema, FAQ y, con sesión, la identidad y cerrar
@@ -126,12 +126,8 @@ es).
    redes sociales todavía.
 2. **Editar un alojamiento** desde "Mis alojamientos" (`PATCH /api/listings/:id`
    y el formulario de Publicar reutilizado).
-3. **Guardar solo la clave de cada foto** (`listings/<id>/<uuid>`) en Mongo y
-   componer la URL al leer, para que cambiar de `r2.dev` a un dominio propio no
-   obligue a migrar la base. Hoy se guardan URLs completas (ADR 009). Es más barato
-   ahora, con la base casi vacía.
-4. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
-5. **Más adelante, planificado**:
+3. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
+4. **Más adelante, planificado**:
    - Migrar `web` a Nuxt 4 (Pinia, Vitest, `nuxt-icons`, ESLint 9), que es lo que
      pedían las versiones mayores.
    - Un entorno de **staging** cuando haga falta probar cambios de base de datos

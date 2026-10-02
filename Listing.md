@@ -64,7 +64,7 @@ region: {
 ### Fotos
 
 Decisión en el [ADR 009](ADRs.md): las fotos viven en **Cloudflare R2** y en Mongo
-solo van las URLs. Publicar ya las sube (web #36): mientras se publica, las que
+solo van los ids de las fotos. Publicar ya las sube (web #36): mientras se publica, las que
 elige el anfitrión esperan en su navegador (IndexedDB).
 
 **Reglas del producto**
@@ -92,7 +92,7 @@ sequenceDiagram
   N->>R: PUT directo de cada fichero (30 s de margen)
   N->>A: POST /:id/photos/confirm { photoIds }
   A->>R: HEAD de cada fichero: ¿existe? ¿webp o jpeg? ¿pesa lo esperado?
-  A->>M: si todo bien, guarda la URL en photos (si no, borra el fichero de R2 y 400)
+  A->>M: si todo bien, guarda el id en photos (si no, borra el fichero de R2 y 400)
 ```
 
 - `POST /:id/photos`: hasta 10 fotos por alojamiento (contando las que ya tenga).
@@ -100,9 +100,11 @@ sequenceDiagram
   mucho 1 MB, y miniaturas de como mucho 100 KB (holgado sobre lo que sale de
   `web` a 1600 px y 400 px). La firma no puede limitar el peso, así que se
   comprueba aquí. Confirmar la misma foto dos veces no la duplica.
-- `DELETE /:id/photos/:photoId`: quita la URL y borra los dos ficheros de R2.
+- `DELETE /:id/photos/:photoId`: quita el id y borra los dos ficheros de R2.
 - La `api` no recibe los ficheros: el servidor de Render es pequeño y no debe
-  cargar con imágenes. Mongo solo guarda `photos: [String]` (URLs públicas).
+  cargar con imágenes. Mongo solo guarda `photos: [String]` con el `photoId` de cada foto; la `api`
+  compone la URL pública al responder (`R2_PUBLIC_URL` + `listings/<id>/<photoId>`),
+  así que cambiar de dominio no obliga a migrar la base.
 - El nombre de cada fichero lo pone la `api` (`listings/<id>/<photoId>`, con un
   UUID que genera ella), nunca el cliente.
 

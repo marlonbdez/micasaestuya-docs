@@ -46,11 +46,11 @@ Los e2e de `web` apuntaban a la API real de Render. Sus tests de auth creaban us
 
 **Staging** se monta cuando haga falta probar cambios de base de datos antes de aplicarlos en producción (ver [Entornos y ramas](Environments-and-Branches.md) § Staging).
 
-## ADR 009 — Las fotos viven en Cloudflare R2; en Mongo solo van las URLs
+## ADR 009 — Las fotos viven en Cloudflare R2; en Mongo solo van los ids
 
 Sin fotos reales, Explorar y Detalle no pueden mostrar nada. Hacía falta decidir dónde guardarlas.
 
-**Decisión:** las fotos se guardan en **Cloudflare R2** (almacén de ficheros compatible con S3). La `api` no las recibe ni las guarda: el navegador las sube directo a R2 con una URL firmada y temporal que la `api` concede, y en Mongo solo queda `photos: [String]` con las URLs. La base de datos no lleva nunca datos de imagen.
+**Decisión:** las fotos se guardan en **Cloudflare R2** (almacén de ficheros compatible con S3). La `api` no las recibe ni las guarda: el navegador las sube directo a R2 con una URL firmada y temporal que la `api` concede, y en Mongo solo queda `photos: [String]` con el id de cada foto. La `api` compone la URL pública al responder, para que cambiar el dominio de las imágenes (del `r2.dev` a uno propio) no obligue a migrar la base. La base de datos no lleva nunca datos de imagen.
 
 **Por qué R2:** el plan gratuito da 10 GB de almacenamiento, 1 millón de escrituras y 10 millones de lecturas al mes, y **las descargas no se cobran** (las fotos se piden muchas veces). Pasado el plan gratuito son 0,015 $/GB al mes (cifras de la página de precios de Cloudflare, septiembre de 2026; conviene revisarlas antes de depender de ellas).
 
