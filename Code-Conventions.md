@@ -53,6 +53,7 @@ Se aplica a todos los repos, y es la versión de código de los principios de
   sesión, en claro y en oscuro, en móvil y en escritorio.
 - **Robusto en los bordes:** validar en el sitio donde se puede saltar
   (formularios, endpoints) y no fiarse de un valor por defecto.
+- **Escribir para un repo público:** solo lo decidido y lo verificable.
 
 ## Git / CI
 

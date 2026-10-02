@@ -27,7 +27,7 @@ Los repos de código (web, api, infra) están alojados en GitHub bajo la cuenta 
 
 ## ADR 006 — Pivote: de portal inmobiliario a plataforma de intercambio de alojamiento por colaboración
 
-Se abandona la idea original de micasaestuya como portal de compraventa/alquiler de inmuebles. El nuevo modelo conecta a personas que ofrecen alojamiento y comida con personas dispuestas a colaborar en tareas domésticas u otras a cambio — en la línea de Workaway, Worldpackers o HelpX, pero pensado desde el Caribe (Cuba y República Dominicana como mercado de lanzamiento) con vocación global desde el principio. La plataforma es gratuita y se sostiene solo con donaciones voluntarias (sin comisión, sin cuota); actúa como simple conector — anfitrión y viajero negocian y cierran el trato por canales externos (WhatsApp, videollamada), la plataforma no media ni verifica identidades más allá de un login social. Toda la documentación técnica anterior sobre anuncios de propiedades queda obsoleta y se está reescribiendo. Detalle completo en [product-vision.md](product-vision.md).
+Se abandona la idea original de micasaestuya como portal de compraventa/alquiler de inmuebles. El nuevo modelo conecta a personas que ofrecen alojamiento y comida con personas dispuestas a colaborar en tareas domésticas u otras a cambio, pensado desde el Caribe (Cuba y República Dominicana como mercado de lanzamiento) con vocación global desde el principio. La plataforma es gratuita y se sostiene solo con donaciones voluntarias (sin comisión, sin cuota); actúa como simple conector — anfitrión y viajero negocian y cierran el trato por canales externos (WhatsApp, videollamada), la plataforma no media ni verifica identidades más allá de un login social. Toda la documentación técnica anterior sobre anuncios de propiedades queda obsoleta y se está reescribiendo. Detalle completo en [product-vision.md](product-vision.md).
 
 ## ADR 007 — Sin roles de producto: se quita `User.role`
 
@@ -55,7 +55,7 @@ Sin fotos reales, Explorar y Detalle no pueden mostrar nada. Hacía falta decidi
 **Por qué R2:** el plan gratuito da 10 GB de almacenamiento, 1 millón de escrituras y 10 millones de lecturas al mes, y **las descargas no se cobran** (las fotos se piden muchas veces). Pasado el plan gratuito son 0,015 $/GB al mes (cifras de la página de precios de Cloudflare, septiembre de 2026; conviene revisarlas antes de depender de ellas).
 
 **Reglas del producto:**
-- De **1 a 10 fotos** por alojamiento, como Airbnb, Workaway y Worldpackers.
+- De **1 a 10 fotos** por alojamiento.
 - Cada foto se optimiza **en el navegador** antes de subirla: **WebP** (con JPEG de reserva si el navegador no sabe codificar WebP, como pasa en algunos Safari), lado mayor de **1600 px** (buen tamaño sin pasarse) y sin EXIF (que puede llevar el GPS de la casa), más una **miniatura de 400 px** para Explorar (el tamaño habitual de una tarjeta en rejilla). Estimación sin medir: 150–250 KB la foto y 20–30 KB la miniatura, es decir, unos 2–3 MB por alojamiento; los 10 GB gratuitos darían para unos 3.000–5.000 alojamientos.
 
 **Reglas de seguridad:**

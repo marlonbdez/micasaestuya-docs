@@ -6,7 +6,7 @@
 
 Una plataforma que conecta a personas que ofrecen alojamiento y comida con personas dispuestas a colaborar unas horas al día en tareas domésticas u otras, a cambio. Sin dinero de por medio entre anfitrión y viajero — el intercambio es alojamiento + comida por colaboración.
 
-Ya existen plataformas parecidas (Workaway, Worldpackers, HelpX, WWOOF), de pago para el viajero y centradas en Europa/Oceanía, o —en el caso de Worldpackers— ya fuerte en Centro y Sudamérica. micasaestuya arranca en el Caribe (Cuba y República Dominicana) con vocación de crecer a cualquier país del mundo.
+micasaestuya es gratuita para anfitriones y viajeros, y arranca en el Caribe (Cuba y República Dominicana) con vocación de crecer a cualquier país del mundo.
 
 ## A quién sirve
 

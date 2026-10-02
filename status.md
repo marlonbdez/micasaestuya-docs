@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-_Última revisión: 27-09-2026._
+_Última revisión: 02-10-2026._
 
 ## Antes de nada: este documento no es la fuente de verdad
 
@@ -61,8 +61,14 @@ lista de tareas pendientes.
 - **Mis alojamientos** (`/mis-alojamientos`, web #45, api #28 y #29): la lista del
   usuario con `GET /api/listings/mine` (incluye los que no tienen fotos, con un
   aviso) y borrar con confirmación en la tarjeta (`DELETE /api/listings/:id`, que
-  también borra las fotos de R2). El enlace del menú ya funciona. **Editar** queda
-  pendiente.
+  también borra las fotos de R2). El enlace del menú ya funciona.
+- **Editar un alojamiento** (`/mis-alojamientos/[id]/editar`, web #50 y #51, api #31):
+  `PATCH /api/listings/:id` y el mismo `ListingForm` que usa Publicar.
+- **Fotos por id**: en Mongo solo va el `photoId` de cada foto y la `api` compone la
+  URL al responder (api #32), así que cambiar el dominio de las imágenes no obliga a
+  migrar la base.
+- **CI de `web`**: `knip` (lo que sobra) y los informes de Lighthouse y de cobertura
+  en la PR (web #47 y #48). Plantilla de PR en `web` y `api`.
 - **Explorar y Detalle** (`/explorar` y `/explorar/[id]`, web #40) con
   `GET /api/listings` y `GET /api/listings/:id` (api #26), públicos. En el detalle,
   "Caben N personas" en vez de plazas libres (la disponibilidad necesita reservas,
@@ -111,23 +117,18 @@ No es de inmuebles, es infraestructura que el MVP necesita igual:
 - El sistema de diseño (`micasaestuya-web/docs/design-system.md`) y los
   componentes `Base*`.
 
-### Referencias
-
-Plataformas parecidas para mirar el flujo y la ficha de un alojamiento (no el
-modelo de negocio: todas cobran, micasaestuya no): Workaway, Worldpackers (la
-más fuerte en Centro y Sudamérica), HelpX y WWOOF (`product-vision.md` § Qué
-es).
-
 ---
 
 ## Lo siguiente, por orden
 
 1. **Cabo suelto**: "Compartir en redes sociales" del footer apunta a `#`; no hay
    redes sociales todavía.
-2. **Editar un alojamiento** desde "Mis alojamientos" (`PATCH /api/listings/:id`
-   y el formulario de Publicar reutilizado).
-3. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
-4. **Más adelante, planificado**:
+2. **Límite de peticiones en las lecturas públicas** de `api`, si hace falta (hoy
+   solo lo tienen login, registro y publicar).
+3. **La siguiente feature**: elegir de "Ideas para más adelante". Por orden,
+   Reportar y la verificación de email, que `product-vision.md` ya contempla.
+4. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
+5. **Más adelante, planificado**:
    - Migrar `web` a Nuxt 4 (Pinia, Vitest, `nuxt-icons`, ESLint 9), que es lo que
      pedían las versiones mayores.
    - Un entorno de **staging** cuando haga falta probar cambios de base de datos
@@ -139,6 +140,23 @@ confirmar estancias, disponibilidad por fechas, reseñas, pagos
 (`product-vision.md` § Qué es el MVP).
 
 ---
+
+## Ideas para más adelante
+
+Posibles mejoras de la web. Ninguna está decidida: cada una entra solo cuando el
+uso real la pida (`product-vision.md` § Qué es el MVP) y, entonces, pasa a "Lo
+siguiente" con su ADR si hace falta.
+
+| Idea                                       | Estado y cuándo tiene sentido                                                  |
+| ------------------------------------------ | ------------------------------------------------------------------------------ |
+| Reportar un alojamiento o a un usuario     | Ya está en `product-vision.md` § Confianza. La primera, en cuanto haya tráfico |
+| Verificación de email                      | Hoy no existe. Junto con Reportar                                              |
+| Perfil de anfitrión (foto, bio)            | Hoy solo se ve el nombre de pila. Si los viajeros piden más confianza          |
+| Reseñas                                    | Fuera del MVP; necesitan estancias confirmadas                                 |
+| Filtros (tareas, capacidad)                | Decidido no hacerlos hasta que el uso real los pida                            |
+| Favoritos o guardados                      | Cuando haya viajeros que vuelvan                                               |
+| Estadísticas públicas, historias           | Cuando haya datos y usuarios que contar                                        |
+| FAQ y términos claros                      | Existen, pero las legales son un borrador sin revisión legal                   |
 
 ## Optimizaciones para una PR propia
 
@@ -153,20 +171,14 @@ cada una, o agrupadas si tocan lo mismo. El criterio general está en
    SVG de `assets/icons/` tiene más de un `<path>`, trae colores o pesa de más, salvo
    las banderas y los usados como `background-image`
    (`micasaestuya-web/docs/design-system.md` § Iconos).
-2. **Detectar lo que sobra** con una herramienta como `knip` (ficheros, exports y
-   dependencias sin uso). Ya conocidos: `BaseSwitch` (se deja a propósito) y los
-   restos de la deuda anotada.
-3. **Presupuesto de peso** del bundle y de las fuentes en la CI, para notar cuándo
+2. **Presupuesto de peso** del bundle y de las fuentes en la CI, para notar cuándo
    algo engorda.
-4. **Accesibilidad más allá de la home.** `pa11y-ci` ya corre en la CI, pero solo
+3. **Accesibilidad más allá de la home.** `pa11y-ci` ya corre en la CI, pero solo
    sobre la home: ampliarlo a Publicar y al menú de usuario abierto, y a Explorar y
    Detalle cuando existan.
-5. **Plantilla de PR** con una lista corta: claro y oscuro, móvil y escritorio, con
-   y sin sesión, y lo que no se pudo probar.
-
 **Deuda concreta que salió al construir el menú**
 
-6. **Iconos recoloreables también en los formularios.** Pasar `check`,
+4. **Iconos recoloreables también en los formularios.** Pasar `check`,
    `error-circle`, `location`, `search` y `chevron-down` de `background-image` a
    `mask` con una variable (toca `BaseInput`, `BaseCheckbox`, `BaseSelect`,
    `BaseTextarea` y `BaseFileInput`); permitiría borrar `chevron-down-white`.
