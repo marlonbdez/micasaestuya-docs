@@ -35,14 +35,17 @@ Los detalles de los endpoints de alojamientos están en [Listing.md](Listing.md)
 
 ## Límite de peticiones
 
-Protege contra el prueba y error de contraseñas y contra el abuso de escrituras
+Protege contra el prueba y error de contraseñas y contra el abuso de escrituras y de lecturas
 (`express-rate-limit`, en `utils/rateLimit.js`). Cuenta **por IP** y en ventanas
 de 15 minutos; al pasarse, responde `429 Too many requests`.
 
 | Limitador | Rutas | Máximo |
 |-----------|-------|--------|
 | `authLimiter` | `POST /api/users/login`, `POST /api/users/create` | 20 |
-| `writeLimiter` | `POST /api/listings` | 30 |
+| `writeLimiter` | `POST`, `PATCH` y `DELETE` de `/api/listings` y de sus fotos | 30 |
+| `readLimiter` | `GET /api/listings`, `/api/listings/mine` y `/api/listings/:id` | 300 |
+
+`/api/regions/*` y el resto de rutas de `users` no tienen límite.
 
 ```mermaid
 sequenceDiagram

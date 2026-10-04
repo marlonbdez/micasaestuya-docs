@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-_Última revisión: 02-10-2026._
+_Última revisión: 04-10-2026._
 
 ## Antes de nada: este documento no es la fuente de verdad
 
@@ -82,9 +82,13 @@ lista de tareas pendientes.
 - **`web` sin restos visibles del portal**: título de la web y páginas del footer
   (quiénes somos, FAQ, mapa web y legales; **las legales son un borrador** sin
   revisión legal) (web #30).
-- **Dependencias**: Dependabot de `web` y de `api` no propone versiones mayores
-  (se hacen a mano, una a una) y agrupa menores y parches. Quedan abiertas las PR
-  de Dependabot de `web` (#29, #28, #7, #4) y de `infra` (#3, #2), sin revisar.
+- **Dependencias** (04-10-2026): Dependabot de `web` y de `api` no propone versiones
+  mayores (se hacen a mano, una a una) y agrupa menores y parches; en `web` también
+  ignora `nuxt`, `@nuxt/test-utils`, `@pinia/nuxt`, `vitest`, `@vitest/coverage-v8` y
+  `eslint-plugin-vitest`, que se exigen versiones entre sí y rompen `npm ci` (se
+  actualizan juntos con la migración a Nuxt 4). Ya no hay PR de Dependabot abiertas.
+  **El lock de `web` se genera con npm 10** (`npx npm@10 install`), el de la CI
+  (Node 20): con npm 11 `npm ci` falla en la CI por dependencias opcionales que faltan.
 - **Producción, Atlas y R2** (29-09-2026): la base de producción es `micasaestuya`
   (antes la `api` escribía en `test`, porque la cadena de conexión no llevaba nombre
   de base), con un usuario propio `micasaestuya-api` con `readWrite` solo sobre esa
@@ -93,6 +97,9 @@ lista de tareas pendientes.
   pública del bucket (`Environment-Variables.md`).
 - **Render construye `api` desde el repo de GitHub**, no desde la imagen de
   `ghcr.io` (documentado).
+- **Límite de peticiones en las lecturas** (api): `GET /api/listings`, `/mine` y
+  `/:id` llevan `readLimiter` (300 por ventana); los endpoints de escritura,
+  `writeLimiter`, y login y registro, `authLimiter`.
 - **Seguridad y privacidad**: Sentry Replay enmascara el texto y graba el 10 % de
   las sesiones, y `api` ya no lleva contraseñas de Mongo por defecto en el código.
 - **Los e2e ya no tocan producción** (web #35, api #23, infra #5): en la CI corren
@@ -121,14 +128,12 @@ No es de inmuebles, es infraestructura que el MVP necesita igual:
 
 ## Lo siguiente, por orden
 
-1. **Cabo suelto**: "Compartir en redes sociales" del footer apunta a `#`; no hay
-   redes sociales todavía.
-2. **Límite de peticiones en las lecturas públicas** de `api`, si hace falta (hoy
-   solo lo tienen login, registro y publicar).
-3. **La siguiente feature**: elegir de "Ideas para más adelante". Por orden,
+1. **Cabo suelto**: la home todavía enseña el buscador del portal (Comprar,
+   Alquilar, Compartir y "Encuentra tu espacio"), que es del modelo anterior.
+2. **La siguiente feature**: elegir de "Ideas para más adelante". Por orden,
    Reportar y la verificación de email, que `product-vision.md` ya contempla.
-4. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
-5. **Más adelante, planificado**:
+3. **Optimizaciones** (sección siguiente): las que se elijan, en PR pequeñas.
+4. **Más adelante, planificado**:
    - Migrar `web` a Nuxt 4 (Pinia, Vitest, `nuxt-icons`, ESLint 9), que es lo que
      pedían las versiones mayores.
    - Un entorno de **staging** cuando haga falta probar cambios de base de datos
@@ -285,8 +290,8 @@ Solo la que sigue valiendo después del pivote.
 - JWT sin expiración ni refresh (`API.md`).
 - `web` y `api` sin tests de extremo a extremo del flujo de Publicar con login
   real.
-- Solo `POST /api/listings` y `/api/users/login|create` tienen límite de
-  peticiones; el resto de rutas con auth, no.
+- Solo las rutas de `listings` y `/api/users/login|create` tienen límite de
+  peticiones; `/regions` y el resto de rutas de `users`, no.
 
 **Conocido y dejado así a propósito:** `micasaestuya-infra/seed/` tiene su propia
 copia de `regions_cu.json` y `regions_do.json` (iguales a las de `api/data/`), un
