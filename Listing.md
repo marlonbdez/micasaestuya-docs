@@ -69,8 +69,7 @@ elige el anfitrión esperan en su navegador (IndexedDB).
 
 **Reglas del producto**
 
-- De **1 a 10 fotos** por alojamiento (el máximo habitual en Airbnb, Workaway y
-  Worldpackers).
+- De **1 a 10 fotos** por alojamiento.
 - Cada foto se optimiza en el navegador antes de subirla: **WebP** (JPEG de reserva
   si el navegador no sabe codificar WebP), lado mayor de **1600 px** (buen tamaño
   sin pasarse, el mismo que ya usaba `useImageResize` antes de esta decisión, solo
